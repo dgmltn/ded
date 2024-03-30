@@ -1,27 +1,35 @@
-package com.dgmltn.ded.fredbuf
+package com.dgmltn.ded.fredbuf.redblacktree
+
+import com.dgmltn.ded.fredbuf.piecetree.BufferMeta
+import com.dgmltn.ded.fredbuf.CharOffset
+import com.dgmltn.ded.fredbuf.Column
+import com.dgmltn.ded.fredbuf.Length
 
 //TODO: make this generic, and replace NodeData with <T>?
 
-data class BufferIndex(val value: Int) {
+data class BufferIndex(val value: Int = 0) {
     companion object {
         val ModBuf = BufferIndex(-1)
     }
 }
 
-data class Line(val value: Int) {
+data class Line(val value: Int = 0) {
     companion object {
-        val IndexBeginning = Line(-1)
-        val Beginning = Line(-2)
+        val IndexBeginning = Line(0)
+        val Beginning = Line(1)
     }
+
+    operator fun plus(other: Int) = Line(value + other)
+    operator fun minus(other: Int) = Line(value - other)
 }
 
-data class LFCount(val value: Int) {
+data class LFCount(val value: Int = 0) {
     operator fun plus(other: LFCount) = LFCount(this.value + other.value)
 }
 
 data class BufferCursor(
-    val line: Line, // Relative line in the current buffer.
-    val column: Column // Column into the current line.
+    val line: Line = Line(), // Relative line in the current buffer.
+    val column: Column = Column() // Column into the current line.
 )
 
 data class Piece(
@@ -43,8 +51,8 @@ class RedBlackTree(val root_ptr: Node? = null) {
 
     data class NodeData(
         val piece: Piece,
-        val left_subtree_length: Length,
-        val left_subtree_lf_count: LFCount
+        val left_subtree_length: Length = Length(),
+        val left_subtree_lf_count: LFCount = LFCount()
     )
 
     data class Node(val color: Color, val left: Node?, val data: NodeData, val right: Node?)
@@ -125,6 +133,12 @@ class RedBlackTree(val root_ptr: Node? = null) {
     fun tree_lf_count(): LFCount =
         if (isEmpty()) LFCount(0) else root().left_subtree_lf_count + root().piece.newline_count + right().tree_lf_count()
 
+    fun compute_buffer_meta(): BufferMeta =
+        BufferMeta(
+            lf_count = tree_lf_count(),
+            total_content_length = tree_length()
+        )
+
     fun remove(at: CharOffset): RedBlackTree {
         val t = rem(this, at, CharOffset(0))
         if (t.isEmpty())
@@ -137,6 +151,8 @@ class RedBlackTree(val root_ptr: Node? = null) {
             rgt = t.right()
         )
     }
+
+    fun satisfies_rb_invariants() = satisfies_rb_invariants(this)
 
     companion object {
         fun attribute(data: NodeData, left: RedBlackTree): NodeData =
@@ -366,7 +382,8 @@ class RedBlackTree(val root_ptr: Node? = null) {
 
             // case: (_, Some(R), Some(B))
             if (!left.right().isEmpty() && left.right().root_color() == Color.Red
-                && !left.right().left().isEmpty() && left.right().left().root_color() == Color.Black) {
+                && !left.right().left().isEmpty() && left.right().left().root_color() == Color.Black
+            ) {
                 val unbalanced_new_right = RedBlackTree(
                     c = Color.Black,
                     lft = left.right().left().right(),
@@ -417,7 +434,8 @@ class RedBlackTree(val root_ptr: Node? = null) {
 
             // case: (Some(R), Some(B), _)
             if (!right.left().isEmpty() && right.left().root_color() == Color.Red
-                && !right.left().right().isEmpty() && right.left().right().root_color() == Color.Black) {
+                && !right.left().right().isEmpty() && right.left().right().root_color() == Color.Black
+            ) {
                 val unbalanced_new_left = RedBlackTree(
                     c = Color.Black,
                     // Note: Because 'left' is red, it must have a left child.
