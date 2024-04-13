@@ -9,7 +9,7 @@ import com.dgmltn.ded.fredbuf.redblacktree.RedBlackTree2
 
 interface ISnapshot {
     val tree: Tree
-    var root: RedBlackTree2<Piece>
+    var root: RedBlackTree
     var meta: BufferMeta
     var buffers: BufferCollection
 
