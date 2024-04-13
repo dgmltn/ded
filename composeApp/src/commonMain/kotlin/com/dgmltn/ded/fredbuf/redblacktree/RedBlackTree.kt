@@ -1,48 +1,14 @@
 package com.dgmltn.ded.fredbuf.redblacktree
 
 import com.dgmltn.ded.fredbuf.piecetree.BufferMeta
-import com.dgmltn.ded.fredbuf.CharOffset
-import com.dgmltn.ded.fredbuf.Column
-import com.dgmltn.ded.fredbuf.Length
+import com.dgmltn.ded.fredbuf.editor.CharOffset
+import com.dgmltn.ded.fredbuf.editor.Length
 
 //TODO: make this generic, and replace NodeData with <T>?
 
-data class BufferIndex(val value: Int = 0) {
-    companion object {
-        val ModBuf = BufferIndex(-1)
-    }
-}
+class RedBlackTree(val rootPtr: Node? = null) {
 
-data class Line(val value: Int = 0) {
-    companion object {
-        val IndexBeginning = Line(0)
-        val Beginning = Line(1)
-    }
-
-    operator fun plus(other: Int) = Line(value + other)
-    operator fun minus(other: Int) = Line(value - other)
-}
-
-data class LFCount(val value: Int = 0) {
-    operator fun plus(other: LFCount) = LFCount(this.value + other.value)
-}
-
-data class BufferCursor(
-    val line: Line = Line(), // Relative line in the current buffer.
-    val column: Column = Column() // Column into the current line.
-)
-
-data class Piece(
-    val index: BufferIndex, // Index into a buffer in PieceTree.  This could be an immutable buffer or the mutable buffer.
-    val first: BufferCursor,
-    val last: BufferCursor,
-    val length: Length,
-    val newline_count: LFCount
-)
-
-class RedBlackTree(val root_ptr: Node? = null) {
-
-    constructor(c: Color, lft: RedBlackTree, data: NodeData, rgt: RedBlackTree): this(Node(c, lft.root_ptr, attribute(data, lft), rgt.root_ptr))
+    constructor(c: Color, lft: RedBlackTree, data: NodeData, rgt: RedBlackTree): this(Node(c, lft.rootPtr, attribute(data, lft), rgt.rootPtr))
 
     enum class Color {
         Red, Black, DoubleBlack;
@@ -51,47 +17,37 @@ class RedBlackTree(val root_ptr: Node? = null) {
 
     data class NodeData(
         val piece: Piece,
-        val left_subtree_length: Length = Length(),
-        val left_subtree_lf_count: LFCount = LFCount()
+        val leftSubtreeLength: Length = Length(),
+        val leftSubtreeLfCount: LFCount = LFCount()
     )
 
     data class Node(val color: Color, val left: Node?, val data: NodeData, val right: Node?)
 
-    data class ColorTree(val color: Color, val tree: RedBlackTree?) {
-        private constructor(): this(Color.DoubleBlack, null)
-        constructor(tree: RedBlackTree): this(if (tree.isEmpty()) Color.Black else tree.root_color(), tree)
-        constructor(c: Color, lft: RedBlackTree, x: NodeData, rgt: RedBlackTree): this(c, RedBlackTree(c, lft, x, rgt))
-
-        companion object {
-            fun double_black() = ColorTree()
-        }
-    }
-
     data class WalkResult(
         val tree: RedBlackTree,
-        val accumulated_offset: CharOffset
+        val accumulatedOffset: CharOffset
     )
 
-    fun isEmpty() = root_ptr == null
+    fun isEmpty() = rootPtr == null
 
     fun root(): NodeData {
         check(!isEmpty()) { "Tree is empty!" }
-        return root_ptr!!.data
+        return rootPtr!!.data
     }
 
     fun left(): RedBlackTree {
         check(!isEmpty()) { "Tree is empty!" }
-        return RedBlackTree(root_ptr!!.left)
+        return RedBlackTree(rootPtr!!.left)
     }
 
     fun right(): RedBlackTree {
         check(!isEmpty()) { "Tree is empty!" }
-        return RedBlackTree(root_ptr!!.right)
+        return RedBlackTree(rootPtr!!.right)
     }
 
-    fun root_color(): Color {
+    fun rootColor(): Color {
         check(!isEmpty()) { "Tree is empty!" }
-        return root_ptr!!.color
+        return rootPtr!!.color
     }
 
     fun insert(x: NodeData, at: CharOffset): RedBlackTree {
@@ -99,44 +55,44 @@ class RedBlackTree(val root_ptr: Node? = null) {
         return RedBlackTree(Color.Black, t.left(), t.root(), t.right())
     }
 
-    fun ins(x: NodeData, at: CharOffset, total_offset: CharOffset): RedBlackTree {
+    fun ins(x: NodeData, at: CharOffset, totalOffset: CharOffset): RedBlackTree {
         if (isEmpty())
             return RedBlackTree(Color.Red, RedBlackTree(), x, RedBlackTree())
 
         val y = root()
-        if (at < total_offset + y.left_subtree_length + y.piece.length)
-            return balance(root_color(), left().ins(x, at, total_offset), y, right())
+        if (at < totalOffset + y.leftSubtreeLength + y.piece.length)
+            return balance(rootColor(), left().ins(x, at, totalOffset), y, right())
 
-        return balance(root_color(), left(), y, right().ins(x, at, total_offset + y.left_subtree_length + y.piece.length))
+        return balance(rootColor(), left(), y, right().ins(x, at, totalOffset + y.leftSubtreeLength + y.piece.length))
     }
 
-    fun doubled_left(): Boolean =
+    fun doubledLeft(): Boolean =
         !isEmpty()
-                && root_color() == Color.Red
+                && rootColor() == Color.Red
                 && !left().isEmpty()
-                && left().root_color() == Color.Red
+                && left().rootColor() == Color.Red
 
-    fun doubled_right(): Boolean =
+    fun doubledRight(): Boolean =
         !isEmpty()
-                && root_color() == Color.Red
+                && rootColor() == Color.Red
                 && !right().isEmpty()
-                && right().root_color() != Color.Red
+                && right().rootColor() != Color.Red
 
     fun paint(c: Color): RedBlackTree {
         check(!isEmpty()) { "Tree is empty!" }
         return RedBlackTree(c, left(), root(), right())
     }
 
-    fun tree_length(): Length =
-        if (isEmpty()) Length(0) else root().left_subtree_length + root().piece.length + right().tree_length()
+    fun treeLength(): Length =
+        if (isEmpty()) Length(0) else root().leftSubtreeLength + root().piece.length + right().treeLength()
 
-    fun tree_lf_count(): LFCount =
-        if (isEmpty()) LFCount(0) else root().left_subtree_lf_count + root().piece.newline_count + right().tree_lf_count()
+    fun treeLfCount(): LFCount =
+        if (isEmpty()) LFCount(0) else root().leftSubtreeLfCount + root().piece.newlineCount + right().treeLfCount()
 
-    fun compute_buffer_meta(): BufferMeta =
+    fun computeBufferMeta(): BufferMeta =
         BufferMeta(
-            lf_count = tree_lf_count(),
-            total_content_length = tree_length()
+            lfCount = treeLfCount(),
+            totalContentLength = treeLength()
         )
 
     fun remove(at: CharOffset): RedBlackTree {
@@ -152,54 +108,54 @@ class RedBlackTree(val root_ptr: Node? = null) {
         )
     }
 
-    fun satisfies_rb_invariants() = satisfies_rb_invariants(this)
+    fun checkSatisfiesRbInvariants() = checkSatisfiesRbInvariants(this)
 
     companion object {
         fun attribute(data: NodeData, left: RedBlackTree): NodeData =
             data.copy(
-                left_subtree_length = left.tree_length(),
-                left_subtree_lf_count = left.tree_lf_count()
+                leftSubtreeLength = left.treeLength(),
+                leftSubtreeLfCount = left.treeLfCount()
             )
 
         fun balance(node: RedBlackTree): RedBlackTree {
             // Two red children.
             if (
-                !node.left().isEmpty() && node.left().root_color() == Color.Red
-                && !node.right().isEmpty() && node.right().root_color() == Color.Red
+                !node.left().isEmpty() && node.left().rootColor() == Color.Red
+                && !node.right().isEmpty() && node.right().rootColor() == Color.Red
             ) {
                 val l = node.left().paint(Color.Black)
                 val r = node.right().paint(Color.Black)
                 return RedBlackTree(Color.Red, l, node.root(), r)
             }
 
-            check(node.root_color() == Color.Black)
+            check(node.rootColor() == Color.Black)
 
-            return balance(node.root_color(), node.left(), node.root(), node.right())
+            return balance(node.rootColor(), node.left(), node.root(), node.right())
         }
 
         fun balance(c: Color, lft: RedBlackTree, x: NodeData, rgt: RedBlackTree): RedBlackTree =
-            if (c == Color.Black && lft.doubled_left())
+            if (c == Color.Black && lft.doubledLeft())
                 RedBlackTree(
                     c = Color.Red,
                     lft = lft.left().paint(Color.Black),
                     data = lft.root(),
                     rgt = RedBlackTree(Color.Black, lft.right(), x, rgt)
                 )
-            else if (c == Color.Black && lft.doubled_right())
+            else if (c == Color.Black && lft.doubledRight())
                 RedBlackTree(
                     c = Color.Red,
                     lft = RedBlackTree(Color.Black, lft.left(), lft.root(), lft.right().left()),
                     data = lft.right().root(),
                     rgt = RedBlackTree(Color.Black, lft.right().right(), x, rgt)
                 )
-            else if (c == Color.Black && rgt.doubled_left())
+            else if (c == Color.Black && rgt.doubledLeft())
                 RedBlackTree(
                     c = Color.Red,
                     lft = RedBlackTree(Color.Black, lft, x, rgt.left().left()),
                     data = rgt.left().root(),
                     rgt = RedBlackTree(Color.Black, rgt.left().right(), rgt.root(), rgt.right())
                 )
-            else if (c == Color.Black && rgt.doubled_right())
+            else if (c == Color.Black && rgt.doubledRight())
                 RedBlackTree(
                     c = Color.Red,
                     lft = RedBlackTree(Color.Black, lft, x, rgt.left()),
@@ -212,35 +168,35 @@ class RedBlackTree(val root_ptr: Node? = null) {
             var offset = start_offset
             var t = root.left()
             while (!t.right().isEmpty()) {
-                offset = offset + t.root().left_subtree_length + t.root().piece.length
+                offset = offset + t.root().leftSubtreeLength + t.root().piece.length
                 t = t.right()
             }
             // Add the final offset from the last right node.
-            offset += t.root().left_subtree_length
-            return WalkResult(tree = t, accumulated_offset = offset)
+            offset += t.root().leftSubtreeLength
+            return WalkResult(tree = t, accumulatedOffset = offset)
         }
 
-        fun remove_left(root: RedBlackTree, at: CharOffset, total: CharOffset): RedBlackTree {
-            val new_left = rem(root.left(), at, total)
-            val new_node = RedBlackTree(Color.Red, new_left, root.root(), root.right())
+        fun removeLeft(root: RedBlackTree, at: CharOffset, total: CharOffset): RedBlackTree {
+            val newLeft = rem(root.left(), at, total)
+            val newNode = RedBlackTree(Color.Red, newLeft, root.root(), root.right())
 
             // In this case, the root was a red node and must've had at least two children.
-            if (!root.left().isEmpty() && root.left().root_color() == Color.Black)
-                return balance_left(new_node)
+            if (!root.left().isEmpty() && root.left().rootColor() == Color.Black)
+                return balanceLeft(newNode)
 
-            return new_node
+            return newNode
         }
 
-        fun remove_right(root: RedBlackTree, at: CharOffset, total: CharOffset): RedBlackTree {
+        fun removeRight(root: RedBlackTree, at: CharOffset, total: CharOffset): RedBlackTree {
             val y = root.root()
-            val new_right = rem(root.right(), at, total + y.left_subtree_length + y.piece.length)
-            val new_node = RedBlackTree(Color.Red, root.left(), root.root(), new_right)
+            val newRight = rem(root.right(), at, total + y.leftSubtreeLength + y.piece.length)
+            val newNode = RedBlackTree(Color.Red, root.left(), root.root(), newRight)
 
             // In this case, the root was a red node and must've had at least two children.
-            if (!root.right().isEmpty() && root.right().root_color() == Color.Black)
-                return balance_right(new_node)
+            if (!root.right().isEmpty() && root.right().rootColor() == Color.Black)
+                return balanceRight(newNode)
 
-            return new_node
+            return newNode
         }
 
         fun rem(root: RedBlackTree, at: CharOffset, total: CharOffset): RedBlackTree {
@@ -248,11 +204,11 @@ class RedBlackTree(val root_ptr: Node? = null) {
                 return RedBlackTree()
 
             val y = root.root()
-            if (at < total + y.left_subtree_length)
-                return remove_left(root, at, total)
-            if (at == total + y.left_subtree_length)
+            if (at < total + y.leftSubtreeLength)
+                return removeLeft(root, at, total)
+            if (at == total + y.leftSubtreeLength)
                 return fuse(root.left(), root.right())
-            return remove_right(root, at, total)
+            return removeRight(root, at, total)
         }
 
         fun fuse(left: RedBlackTree, right: RedBlackTree): RedBlackTree {
@@ -263,7 +219,7 @@ class RedBlackTree(val root_ptr: Node? = null) {
 
             // match: (left.color, right.color)
             // case: (B, R)
-            if (left.root_color() == Color.Black && right.root_color() == Color.Red) {
+            if (left.rootColor() == Color.Black && right.rootColor() == Color.Red) {
                 return RedBlackTree(
                     c = Color.Red,
                     lft = fuse(left, right.left()),
@@ -273,7 +229,7 @@ class RedBlackTree(val root_ptr: Node? = null) {
             }
 
             // case: (R, B)
-            if (left.root_color() == Color.Red && right.root_color() == Color.Black) {
+            if (left.rootColor() == Color.Red && right.rootColor() == Color.Black) {
                 return RedBlackTree(
                     c = Color.Red,
                     lft = left.left(),
@@ -283,16 +239,16 @@ class RedBlackTree(val root_ptr: Node? = null) {
             }
 
             // case: (R, R)
-            if (left.root_color() == Color.Red && right.root_color() == Color.Red) {
+            if (left.rootColor() == Color.Red && right.rootColor() == Color.Red) {
                 val fused = fuse(left.right(), right.left())
-                if (!fused.isEmpty() && fused.root_color() == Color.Red) {
-                    val new_left = RedBlackTree(
+                if (!fused.isEmpty() && fused.rootColor() == Color.Red) {
+                    val newLeft = RedBlackTree(
                         c = Color.Red,
                         lft = left.left(),
                         data = left.root(),
                         rgt = fused.left()
                     )
-                    val new_right = RedBlackTree(
+                    val newRight = RedBlackTree(
                         c = Color.Red,
                         lft = fused.right(),
                         data = right.root(),
@@ -300,12 +256,12 @@ class RedBlackTree(val root_ptr: Node? = null) {
                     )
                     return RedBlackTree(
                         c = Color.Red,
-                        lft = new_left,
+                        lft = newLeft,
                         data = fused.root(),
-                        rgt = new_right
+                        rgt = newRight
                     )
                 }
-                val new_right = RedBlackTree(
+                val newRight = RedBlackTree(
                     c = Color.Red,
                     lft = fused,
                     data = right.root(),
@@ -315,21 +271,21 @@ class RedBlackTree(val root_ptr: Node? = null) {
                     c = Color.Red,
                     lft = left.left(),
                     data = left.root(),
-                    rgt = new_right
+                    rgt = newRight
                 )
             }
 
             // case: (B, B)
-            check(left.root_color() == right.root_color() && left.root_color() == Color.Black)
+            check(left.rootColor() == right.rootColor() && left.rootColor() == Color.Black)
             val fused = fuse(left.right(), right.left())
-            if (!fused.isEmpty() && fused.root_color() == Color.Red) {
-                val new_left = RedBlackTree(
+            if (!fused.isEmpty() && fused.rootColor() == Color.Red) {
+                val newLeft = RedBlackTree(
                     c = Color.Black,
                     lft = left.left(),
                     data = left.root(),
                     rgt = fused.left()
                 )
-                val new_right = RedBlackTree(
+                val newRight = RedBlackTree(
                     c = Color.Black,
                     lft = fused.right(),
                     data = right.root(),
@@ -337,30 +293,30 @@ class RedBlackTree(val root_ptr: Node? = null) {
                 )
                 return RedBlackTree(
                     c = Color.Red,
-                    lft = new_left,
+                    lft = newLeft,
                     data = fused.root(),
-                    rgt = new_right
+                    rgt = newRight
                 )
             }
-            val new_right = RedBlackTree(
+            val newRight = RedBlackTree(
                 c = Color.Black,
                 lft = fused,
                 data = right.root(),
                 rgt = right.right()
             )
-            val new_node = RedBlackTree(
+            val newNode = RedBlackTree(
                 c = Color.Red,
                 lft = left.left(),
                 data = left.root(),
-                rgt = new_right
+                rgt = newRight
             )
-            return balance_left(new_node)
+            return balanceLeft(newNode)
         }
 
-        fun balance_left(left: RedBlackTree): RedBlackTree {
+        private fun balanceLeft(left: RedBlackTree): RedBlackTree {
             // match: (color_l, color_r, color_r_l)
             // case: (Some(R), ..)
-            if (!left.left().isEmpty() && left.left().root_color() == Color.Red) {
+            if (!left.left().isEmpty() && left.left().rootColor() == Color.Red) {
                 return RedBlackTree(
                     c = Color.Red,
                     lft = left.left().paint(Color.Black),
@@ -370,28 +326,28 @@ class RedBlackTree(val root_ptr: Node? = null) {
             }
 
             // case: (_, Some(B), _)
-            if (!left.right().isEmpty() && left.right().root_color() == Color.Black) {
-                val new_left = RedBlackTree(
+            if (!left.right().isEmpty() && left.right().rootColor() == Color.Black) {
+                val newLeft = RedBlackTree(
                     c = Color.Black,
                     lft = left.left(),
                     data = left.root(),
                     rgt = left.right().paint(Color.Red)
                 )
-                return balance(new_left)
+                return balance(newLeft)
             }
 
             // case: (_, Some(R), Some(B))
-            if (!left.right().isEmpty() && left.right().root_color() == Color.Red
-                && !left.right().left().isEmpty() && left.right().left().root_color() == Color.Black
+            if (!left.right().isEmpty() && left.right().rootColor() == Color.Red
+                && !left.right().left().isEmpty() && left.right().left().rootColor() == Color.Black
             ) {
-                val unbalanced_new_right = RedBlackTree(
+                val unbalancedNewRight = RedBlackTree(
                     c = Color.Black,
                     lft = left.right().left().right(),
                     data = left.right().root(),
                     rgt = left.right().right().paint(Color.Red)
                 )
-                val new_right = balance(unbalanced_new_right)
-                val new_left = RedBlackTree(
+                val newRight = balance(unbalancedNewRight)
+                val newLeft = RedBlackTree(
                     c = Color.Black,
                     lft = left.left(),
                     data = left.root(),
@@ -399,9 +355,9 @@ class RedBlackTree(val root_ptr: Node? = null) {
                 )
                 return RedBlackTree(
                     c = Color.Red,
-                    lft = new_left,
+                    lft = newLeft,
                     data = left.right().left().root(),
-                    rgt = new_right
+                    rgt = newRight
                 )
             }
 
@@ -409,10 +365,10 @@ class RedBlackTree(val root_ptr: Node? = null) {
             return left
         }
 
-        fun balance_right(right: RedBlackTree): RedBlackTree {
+        private fun balanceRight(right: RedBlackTree): RedBlackTree {
             // match: (color_l, color_l_r, color_r)
             // case: (.., Some(R))
-            if (!right.right().isEmpty() && right.right().root_color() == Color.Red) {
+            if (!right.right().isEmpty() && right.right().rootColor() == Color.Red) {
                 return RedBlackTree(
                     c = Color.Red,
                     lft = right.left(),
@@ -422,29 +378,29 @@ class RedBlackTree(val root_ptr: Node? = null) {
             }
 
             // case: (Some(B), ..)
-            if (!right.left().isEmpty() && right.left().root_color() == Color.Black) {
-                val new_right = RedBlackTree(
+            if (!right.left().isEmpty() && right.left().rootColor() == Color.Black) {
+                val newRight = RedBlackTree(
                     c = Color.Black,
                     lft = right.left().paint(Color.Red),
                     data = right.root(),
                     rgt = right.right()
                 )
-                return balance(new_right)
+                return balance(newRight)
             }
 
             // case: (Some(R), Some(B), _)
-            if (!right.left().isEmpty() && right.left().root_color() == Color.Red
-                && !right.left().right().isEmpty() && right.left().right().root_color() == Color.Black
+            if (!right.left().isEmpty() && right.left().rootColor() == Color.Red
+                && !right.left().right().isEmpty() && right.left().right().rootColor() == Color.Black
             ) {
-                val unbalanced_new_left = RedBlackTree(
+                val unbalancedNewLeft = RedBlackTree(
                     c = Color.Black,
                     // Note: Because 'left' is red, it must have a left child.
                     lft = right.left().left().paint(Color.Red),
                     data = right.left().root(),
                     rgt = right.left().right().left()
                 )
-                val new_left = balance(unbalanced_new_left)
-                val new_right = RedBlackTree(
+                val newLeft = balance(unbalancedNewLeft)
+                val newRight = RedBlackTree(
                     c = Color.Black,
                     lft = right.left().right().right(),
                     data = right.root(),
@@ -452,9 +408,9 @@ class RedBlackTree(val root_ptr: Node? = null) {
                 )
                 return RedBlackTree(
                     c = Color.Red,
-                    lft = new_left,
+                    lft = newLeft,
                     data = right.left().right().root(),
-                    rgt = new_right
+                    rgt = newRight
                 )
             }
 
@@ -463,28 +419,28 @@ class RedBlackTree(val root_ptr: Node? = null) {
         }
 
         // Borrowed from https://github.com/dotnwat/persistent-rbtree/blob/master/tree.h:checkConsistency.
-        fun check_black_node_invariant(node: RedBlackTree): Int {
+        private fun checkBlackNodeInvariant(node: RedBlackTree): Int {
             if (node.isEmpty())
                 return 1
-            if (node.root_color() == Color.Red &&
-                ((!node.left().isEmpty() && node.left().root_color() == Color.Red)
-                        || (!node.right().isEmpty() && node.right().root_color() == Color.Red))) {
+            if (node.rootColor() == Color.Red &&
+                ((!node.left().isEmpty() && node.left().rootColor() == Color.Red)
+                        || (!node.right().isEmpty() && node.right().rootColor() == Color.Red))) {
                 return 1
             }
 
-            val l = check_black_node_invariant(node.left())
-            val r = check_black_node_invariant(node.right())
+            val l = checkBlackNodeInvariant(node.left())
+            val r = checkBlackNodeInvariant(node.right())
 
             if (l != 0 && r != 0 && l != r)
                 return 0
 
             if (l != 0 && r != 0)
-                return if (node.root_color() == Color.Red) l else l + 1
+                return if (node.rootColor() == Color.Red) l else l + 1
 
             return 0
         }
 
-        fun satisfies_rb_invariants(root: RedBlackTree) {
+        fun checkSatisfiesRbInvariants(root: RedBlackTree) {
             // 1. Every node is either red or black.
             // 2. All NIL nodes (figure 1) are considered black.
             // 3. A red node does not have a red child.
@@ -497,7 +453,7 @@ class RedBlackTree(val root_ptr: Node? = null) {
                 || (root.left().isEmpty() && root.right().isEmpty()))
                 return
 
-            check(check_black_node_invariant(root) != 0)
+            check(checkBlackNodeInvariant(root) != 0)
         }
 
     }
