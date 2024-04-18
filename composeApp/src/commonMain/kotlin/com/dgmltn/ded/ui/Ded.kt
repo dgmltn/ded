@@ -2,7 +2,8 @@ package com.dgmltn.ded.ui
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.LocalTextStyle
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -17,26 +18,45 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import dedTypography
+import com.dgmltn.ded.editor.StringBuilderEditor
+import com.dgmltn.ded.numDigits
 
 @Composable
 fun Ded(
     modifier: Modifier = Modifier,
 ) {
-    val dedState = rememberDedState()
+    val dedState = rememberDedState(editor = StringBuilderEditor().apply {
+        insert("Hello, world\nthis is a test\nLine #3")
+        move(5)
+    })
 
-    Box(modifier = modifier) {
+    val lineNumberXOffset = dedState.editor.lineCount.numDigits() + 1
+
+    Box(modifier = modifier.padding(5.dp)) {
         DedGrid(
             state = dedState,
             modifier = Modifier.fillMaxSize(),
-            textStyle = TextStyle(fontFamily = dedTypography(), fontSize = 18.sp)
+            textStyle = DedTheme.typography.code.copy(fontSize = 18.sp)
         ) {
-            CellGlyph(2, 2, 'l')
-            CellGlyph(5, 5, 'l')
-            CellGlyphs(6, 5, "Hello, world!")
-            CellGlyphs(7, 5, "This is a test")
-            Cursor(5, 5)
+            var row = 0
+            var col = 0
+            LineNumber(row)
+            (0 until dedState.editor.length).forEach { i ->
+                val c = dedState.editor.getCharAt(i)
+                if (c != '\n') CellGlyph(row, col + lineNumberXOffset, c)
+                if (i == dedState.editor.cursor) {
+                    Cursor(row, col + lineNumberXOffset)
+                }
+                col++
+                if (c == '\n') {
+                    row++
+                    col = 0
+                    LineNumber(row)
+                }
+            }
+
         }
     }
 }

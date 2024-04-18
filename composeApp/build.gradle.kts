@@ -38,7 +38,7 @@ kotlin {
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
-            implementation(compose.material)
+            implementation(compose.material3)
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
@@ -87,7 +87,7 @@ android {
     }
 }
 dependencies {
-    testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
 }
 
 compose.desktop {

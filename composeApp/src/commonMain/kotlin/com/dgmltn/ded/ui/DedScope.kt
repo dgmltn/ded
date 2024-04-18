@@ -2,8 +2,10 @@ package com.dgmltn.ded.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.material.Text
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.node.ModifierNodeElement
@@ -29,7 +31,17 @@ interface DedScope {
         row: Int,
         col: Int
     ) {
-        Box(modifier = Modifier.position(row, col).background(Color.Black))
+        Box(modifier = Modifier.position(row, col).background(Color.Black.copy(alpha = 0.5f)))
+    }
+
+    @Composable
+    fun LineNumber(
+        row: Int,
+    ) {
+        CompositionLocalProvider(LocalTextStyle provides LocalTextStyle.current.copy(color = Color.Black.copy(alpha = 0.3f))) {
+            // row+1 here because humans are used to 1-based line numbers
+            CellGlyphs(row, 0, (row+1).toString())
+        }
     }
 
     @Composable

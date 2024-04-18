@@ -1,5 +1,6 @@
 package com.dgmltn.ded.editor
 
+import com.dgmltn.ded.fredbuf.redblacktree.Line
 import kotlin.test.assertEquals
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -79,6 +80,35 @@ internal class EditorTest {
         editor.value shouldEqual "hello world"
         editor.cursor shouldEqual 5
         editor.canRedo() shouldEqual false
+    }
+
+    @Test
+    fun test1_lines() {
+        editor.insert("hello world")
+        editor.value shouldEqual "hello world"
+        editor.cursor shouldEqual 11
+        editor.lineCount shouldEqual 1
+        editor.getLines()[0] shouldEqual 0 .. 10
+        editor.getSubstring(editor.getLines()[0]) shouldEqual "hello world"
+
+        editor.insert("\n")
+        editor.lineCount shouldEqual 1
+
+        editor.insert("line #2")
+        editor.lineCount shouldEqual 2
+
+        editor.insert("\nline #3\n")
+        editor.lineCount shouldEqual 3
+
+        val lines = editor.getLines()
+        lines[0] shouldEqual 0 .. 11
+        editor.getSubstring(lines[0]) shouldEqual "hello world\n"
+
+        lines[1] shouldEqual 12 .. 19
+        editor.getSubstring(lines[1]) shouldEqual "line #2\n"
+
+        lines[2] shouldEqual 20 .. 27
+        editor.getSubstring(lines[2]) shouldEqual "line #3\n"
     }
 
     private infix fun Any?.shouldEqual(expected: Any?) {
