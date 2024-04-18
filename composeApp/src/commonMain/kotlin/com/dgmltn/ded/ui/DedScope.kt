@@ -1,7 +1,10 @@
 package com.dgmltn.ded.ui
 
+import DedTheme
+import LocalDefaults
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,29 +32,35 @@ interface DedScope {
     @Composable
     fun Cursor(
         row: Int,
-        col: Int
+        col: Int,
+        color: Color,
     ) {
-        Box(modifier = Modifier.position(row, col).background(Color.Black.copy(alpha = 0.5f)))
+        Box(
+            modifier = Modifier
+                .position(row, col)
+                .background(color)
+        )
     }
 
     @Composable
     fun LineNumber(
         row: Int,
+        color: Color,
     ) {
-        CompositionLocalProvider(LocalTextStyle provides LocalTextStyle.current.copy(color = Color.Black.copy(alpha = 0.3f))) {
-            // row+1 here because humans are used to 1-based line numbers
-            CellGlyphs(row, 0, (row+1).toString())
-        }
+        // row+1 here because humans are used to 1-based line numbers
+        CellGlyphs(row, 0, (row + 1).toString(), color)
     }
 
     @Composable
     fun CellGlyph(
         row: Int,
         col: Int,
-        glyph: Char
+        glyph: Char,
+        color: Color,
     ) {
         Text(
             text = glyph.toString(),
+            color = color,
             modifier = Modifier
                 .position(row, col)
         )
@@ -62,12 +71,14 @@ interface DedScope {
         row: Int,
         col: Int,
         glyphs: String,
+        color: Color,
     ) {
         glyphs.toCharArray().forEachIndexed { index, c ->
             CellGlyph(
                 row = row,
                 col = col + index,
-                glyph = c
+                glyph = c,
+                color = color,
             )
         }
     }

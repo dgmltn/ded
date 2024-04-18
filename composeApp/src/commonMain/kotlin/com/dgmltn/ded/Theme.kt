@@ -1,6 +1,5 @@
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -56,7 +55,12 @@ interface DedColorScheme {
      * These should be used in composables with custom
      * colors.
      */
-    //TODO: editor colors
+    val editorCanvas: Color
+    val editorCursor: Color
+    val editorLineNumber: Color
+    val editorText: Color
+    //TODO: other editor colors
+
     //TODO: syntax hilight colors
 
     val m3: ColorScheme
@@ -99,60 +103,46 @@ object DedColorSchemeDark : DedColorScheme {
     private val base = darkColorScheme()
 
     override val isDarkTheme = true
-    override val primary: Color
-        get() = base.primary
-    override val onPrimary: Color
-        get() = base.onPrimary
-    override val secondary: Color
-        get() = base.secondary
-    override val onSecondary: Color
-        get() = base.onSecondary
-    override val tertiary: Color
-        get() = base.tertiary
-    override val onTertiary: Color
-        get() = base.onTertiary
-    override val background: Color
-        get() = base.background
-    override val onBackground: Color
-        get() = base.onBackground
-    override val surface: Color
-        get() = base.surface
-    override val onSurface: Color
-        get() = base.onSurface
-    override val error: Color
-        get() = base.error
-    override val onError: Color
-        get() = base.onError
+    override val primary = base.primary
+    override val onPrimary = base.onPrimary
+    override val secondary = base.secondary
+    override val onSecondary = base.onSecondary
+    override val tertiary = base.tertiary
+    override val onTertiary = base.onTertiary
+    override val background = base.background
+    override val onBackground = base.onBackground
+    override val surface = base.surface
+    override val onSurface = base.onSurface
+    override val error = base.error
+    override val onError = base.onError
+
+    override val editorCanvas = base.background
+    override val editorCursor = base.onBackground.copy(alpha = 0.5f)
+    override val editorLineNumber = base.onBackground.copy(alpha = 0.5f)
+    override val editorText = base.onBackground
 }
 
 object DedColorSchemeLight: DedColorScheme {
     private val base = lightColorScheme()
 
     override val isDarkTheme = false
-    override val primary: Color
-        get() = base.primary
-    override val onPrimary: Color
-        get() = base.onPrimary
-    override val secondary: Color
-        get() = base.secondary
-    override val onSecondary: Color
-        get() = base.onSecondary
-    override val tertiary: Color
-        get() = base.tertiary
-    override val onTertiary: Color
-        get() = base.onTertiary
-    override val background: Color
-        get() = base.background
-    override val onBackground: Color
-        get() = base.onBackground
-    override val surface: Color
-        get() = base.surface
-    override val onSurface: Color
-        get() = base.onSurface
-    override val error: Color
-        get() = base.error
-    override val onError: Color
-        get() = base.onError
+    override val primary = base.primary
+    override val onPrimary = base.onPrimary
+    override val secondary = base.secondary
+    override val onSecondary = base.onSecondary
+    override val tertiary = base.tertiary
+    override val onTertiary = base.onTertiary
+    override val background = base.background
+    override val onBackground = base.onBackground
+    override val surface = base.surface
+    override val onSurface = base.onSurface
+    override val error = base.error
+    override val onError = base.onError
+
+    override val editorCanvas = base.background
+    override val editorCursor = base.onBackground.copy(alpha = 0.5f)
+    override val editorLineNumber = base.onBackground.copy(alpha = 0.5f)
+    override val editorText = base.onBackground
 }
 
 object DedShapes {
@@ -187,7 +177,22 @@ object DedTheme {
 }
 
 object DedThemeDefaults {
+    val editor: DedColors
+        @Composable
+        get() = DedColors(
+            canvas = DedTheme.colors.editorCanvas,
+            cursor = DedTheme.colors.editorCursor,
+            lineNumber = DedTheme.colors.editorLineNumber,
+            text = DedTheme.colors.editorText,
+        )
 }
+
+data class DedColors(
+    val canvas: Color,
+    val cursor: Color,
+    val lineNumber: Color,
+    val text: Color,
+)
 
 object DedTypography {
     @OptIn(ExperimentalResourceApi::class)
