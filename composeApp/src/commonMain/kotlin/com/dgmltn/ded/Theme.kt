@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import ded.composeapp.generated.resources.Res
 import ded.composeapp.generated.resources.fira_code_regular
 import org.jetbrains.compose.resources.ExperimentalResourceApi
@@ -201,7 +202,8 @@ object DedTypography {
         get() = TextStyle(
             fontFamily = FontFamily(
                 Font(Res.font.fira_code_regular, FontWeight.Normal, FontStyle.Normal)
-            )
+            ),
+            fontSize = 18.sp
         )
 
     internal val m3 = androidx.compose.material3.Typography()

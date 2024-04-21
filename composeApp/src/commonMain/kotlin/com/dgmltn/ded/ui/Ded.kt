@@ -56,7 +56,7 @@ fun Ded(
         DedGrid(
             state = dedState,
             modifier = Modifier.fillMaxSize(),
-            textStyle = DedTheme.typography.code.copy(fontSize = 18.sp),
+            textStyle = DedTheme.typography.code,
             colors = colors
         )
     }

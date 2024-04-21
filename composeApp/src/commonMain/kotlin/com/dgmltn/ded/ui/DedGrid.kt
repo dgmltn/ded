@@ -12,10 +12,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.TextLayoutResult
-import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.IntSize
@@ -24,7 +22,7 @@ import com.dgmltn.ded.numDigits
 
 private const val GLYPH = "W"
 private val END = Char(0)
-private val NEWLINE = '\n'
+private const val NEWLINE = '\n'
 
 @Composable
 fun DedGrid(
@@ -39,21 +37,27 @@ fun DedGrid(
         modifier = modifier
             .onSizeChanged { state.windowSizePx = it },
     ) {
-        InternalDedGrid(
-            textStyle = textStyle
-        ) {
+        InternalDedGrid(textStyle) {
             var row = 0
             var col = 0
-            LineNumber(
-                row = row,
-                color = colors.lineNumber
-            )
+
             (0 .. state.length).forEach { i ->
                 val c = if (i == state.length) END else state.getCharAt(i)
-                Logger.e { "DOUG: $c ($row, $col)" }
+
+                // Draw line number
+                if (col == 0) {
+                    LineNumber(
+                        row = row,
+                        color = colors.lineNumber
+                    )
+                }
+
+                // Draw glyph (if it's drawable)
                 if (c != NEWLINE && c != END) {
                     CellGlyph(row, col + lineNumberXOffset, c, colors.text)
                 }
+
+                // Draw cursor
                 if (i == state.cursorPos) {
                     Cursor(
                         row = row,
@@ -61,14 +65,14 @@ fun DedGrid(
                         color = colors.cursor
                     )
                 }
-                col++
+
+                // Update col, row
                 if (c == NEWLINE) {
                     row++
                     col = 0
-                    LineNumber(
-                        row = row,
-                        color = colors.lineNumber
-                    )
+                }
+                else {
+                    col++
                 }
             }
 
@@ -82,12 +86,10 @@ private fun InternalDedGrid(
     content: @Composable DedScope.() -> Unit = {}
 ) {
     val textMeasurer = rememberTextMeasurer()
-    var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
     var cellSize by remember { mutableStateOf(IntSize(16, 24)) }
 
     LaunchedEffect(GLYPH) {
-        val result = GLYPH.let { textMeasurer.measure(GLYPH, textStyle) }
-        textLayoutResult = result
+        val result = textMeasurer.measure(GLYPH, textStyle)
         cellSize = result.size
     }
 
