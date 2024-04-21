@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.IntSize
@@ -77,7 +78,6 @@ fun DedGrid(
 
 @Composable
 private fun InternalDedGrid(
-    modifier: Modifier = Modifier,
     textStyle: TextStyle = LocalTextStyle.current,
     content: @Composable DedScope.() -> Unit = {}
 ) {
@@ -92,41 +92,16 @@ private fun InternalDedGrid(
     }
 
     val scope = remember {
-        object : DedScope {}
+        object : DedScope {
+            override val textMeasurer = textMeasurer
+            override val cellSize: IntSize
+                get() = cellSize
+        }
     }
 
-    Layout(
-        modifier = modifier,
-        content = {
-            CompositionLocalProvider(
-                LocalTextStyle provides textStyle,
-            ) {
-                content(scope)
-            }
-        }
-    ) { measurables, constraints ->
-
-        val cellConstraints = constraints.copy(
-            minWidth = cellSize.width,
-            maxWidth = cellSize.width,
-            minHeight = cellSize.height,
-            maxHeight = cellSize.height
-        )
-
-        val placeables = measurables.map { it.measure(cellConstraints) }
-
-        layout(constraints.maxWidth, constraints.maxHeight) {
-            // Place children in the parent layout
-            Logger.e { "DOUG: placing ${placeables.size} placeables" }
-            placeables.forEach { placeable ->
-                // Position item on the screen
-                (placeable.parentData as? DedChildDataNode)?.let {
-                    placeable.place(
-                        x = it.col * cellSize.width,
-                        y = it.row * cellSize.height
-                    )
-                }
-            }
-        }
+    CompositionLocalProvider(
+        LocalTextStyle provides textStyle,
+    ) {
+        content(scope)
     }
 }
