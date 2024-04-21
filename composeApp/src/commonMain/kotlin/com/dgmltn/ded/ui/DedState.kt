@@ -3,33 +3,64 @@ package com.dgmltn.ded.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import com.dgmltn.ded.editor.Editor
+import com.dgmltn.ded.editor.RowCol
 import com.dgmltn.ded.editor.StringBuilderEditor
 
 
 @Composable
 fun rememberDedState(
     editor: Editor = StringBuilderEditor(),
-    initialCursorPos: IntOffset = IntOffset.Zero,
 ): DedState {
     return rememberSaveable(saver = DedState.Saver) {
-        DedState(editor, initialCursorPos)
+        DedState(editor)
     }
 }
 
 class DedState(
-    val editor: Editor = StringBuilderEditor(),
-    initialCursorPos: IntOffset = IntOffset.Zero
+    private val editor: Editor = StringBuilderEditor(),
 ) {
-    var cursorPos by mutableStateOf(initialCursorPos)
+    var cursorPos by mutableStateOf(editor.cursor)
     var windowSizePx by mutableStateOf(IntSize.Zero)
     var windowOffsetPx by mutableStateOf(IntOffset.Zero)
+
+    fun moveNextRow() {
+        editor.moveBy(RowCol(1, 0))
+        cursorPos = editor.cursor
+    }
+
+    fun movePrevRow() {
+        editor.moveBy(RowCol(-1, 0))
+        cursorPos = editor.cursor
+    }
+
+    fun moveFwd() {
+        editor.moveBy(1)
+        cursorPos = editor.cursor
+    }
+
+    fun moveBack() {
+        editor.moveBy(-1)
+        cursorPos = editor.cursor
+    }
+
+    val length: Int
+        get() = editor.length
+
+    val lineCount: Int
+        get() = editor.lineCount
+
+    fun getCharAt(position: Int) = editor.getCharAt(position)
+
+    fun insert(value: String) {
+        editor.insert(value)
+        cursorPos = editor.cursor
+    }
 
     companion object {
         /**

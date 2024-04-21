@@ -1,6 +1,5 @@
 package com.dgmltn.ded.editor
 
-import com.dgmltn.ded.fredbuf.redblacktree.Line
 import kotlin.test.assertEquals
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -21,13 +20,13 @@ internal class EditorTest {
         editor.canUndo() shouldEqual false
 
         // Insert
-        editor.move(0)
+        editor.moveTo(0)
         editor.insert("hello world")
         editor.value shouldEqual "hello world"
         editor.cursor shouldEqual 11
 
         // Insert
-        editor.move(5)
+        editor.moveTo(5)
         editor.insert(" beautiful")
         editor.value shouldEqual "hello beautiful world"
         editor.cursor shouldEqual 15
@@ -63,7 +62,7 @@ internal class EditorTest {
         editor.cursor shouldEqual 11
 
         // Delete
-        editor.move(5)
+        editor.moveTo(5)
         editor.delete(6)
         editor.value shouldEqual "hello world"
         editor.cursor shouldEqual 5
@@ -83,32 +82,63 @@ internal class EditorTest {
     }
 
     @Test
+    fun test1_cursor() {
+        editor.cursor shouldEqual 0
+        editor.insert("hello world")
+        editor.cursor shouldEqual 11
+    }
+
+    @Test
+    fun test1_lineCount() {
+        editor.insert("hello world")
+        editor.value shouldEqual "hello world"
+        editor.lineCount shouldEqual 1
+        editor.insert("\n")
+        editor.lineCount shouldEqual 1
+        editor.insert("line #2")
+        editor.lineCount shouldEqual 2
+        editor.insert("\nline #3\n")
+        editor.lineCount shouldEqual 3
+    }
+
+    @Test
     fun test1_lines() {
         editor.insert("hello world")
         editor.value shouldEqual "hello world"
-        editor.cursor shouldEqual 11
-        editor.lineCount shouldEqual 1
-        editor.getLines()[0] shouldEqual 0 .. 10
-        editor.getSubstring(editor.getLines()[0]) shouldEqual "hello world"
+
+        editor.getRangeOfAllRows()[0] shouldEqual 0 .. 10
 
         editor.insert("\n")
-        editor.lineCount shouldEqual 1
-
         editor.insert("line #2")
-        editor.lineCount shouldEqual 2
-
         editor.insert("\nline #3\n")
-        editor.lineCount shouldEqual 3
 
-        val lines = editor.getLines()
+        val lines = editor.getRangeOfAllRows()
         lines[0] shouldEqual 0 .. 11
-        editor.getSubstring(lines[0]) shouldEqual "hello world\n"
-
         lines[1] shouldEqual 12 .. 19
-        editor.getSubstring(lines[1]) shouldEqual "line #2\n"
-
         lines[2] shouldEqual 20 .. 27
-        editor.getSubstring(lines[2]) shouldEqual "line #3\n"
+    }
+
+    @Test
+    fun test2_getLine() {
+        editor.insert("hello\nworld\nline3\nline4")
+        editor.value shouldEqual "hello\nworld\nline3\nline4"
+        editor.lineCount shouldEqual 4
+        editor.getRangeOfRow(0) shouldEqual 0..5
+        editor.getRangeOfRow(1) shouldEqual 6..11
+        editor.getRangeOfRow(3) shouldEqual 18..22
+    }
+
+    @Test
+    fun test3_substring() {
+        editor.insert("hello\nworld\nline3\nline4")
+        editor.value shouldEqual "hello\nworld\nline3\nline4"
+        editor.getSubstring(12..17) shouldEqual "line3\n"
+    }
+
+    @Test
+    fun test4_getRowColOf() {
+        editor.insert("hello\nworld\nline3\nline4")
+        editor.getRowColOf(15) shouldEqual RowCol(2, 3)
     }
 
     private infix fun Any?.shouldEqual(expected: Any?) {

@@ -29,7 +29,7 @@ fun DedGrid(
     textStyle: TextStyle = LocalTextStyle.current,
     colors: DedColors = LocalDefaults.current.editor
 ) {
-    val lineNumberXOffset = state.editor.lineCount.numDigits() + 1
+    val lineNumberXOffset = state.lineCount.numDigits() + 1
 
     Box(
         modifier = modifier
@@ -44,10 +44,10 @@ fun DedGrid(
                 row = row,
                 color = colors.lineNumber
             )
-            (0 until state.editor.length).forEach { i ->
-                val c = state.editor.getCharAt(i)
-                if (c != '\n') CellGlyph(row, col + lineNumberXOffset, c, colors.text)
-                if (i == state.editor.cursor) {
+            (0 .. state.length).forEach { i ->
+                val c = if (i == state.length) Char(0) else state.getCharAt(i)
+                if (c != '\n' && c != Char(0)) CellGlyph(row, col + lineNumberXOffset, c, colors.text)
+                if (i == state.cursorPos) {
                     Cursor(
                         row = row,
                         col = col + lineNumberXOffset,
