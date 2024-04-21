@@ -26,6 +26,8 @@ class DedState(
     private val editor: Editor = StringBuilderEditor(),
 ) {
     var cursorPos by mutableStateOf(editor.cursor)
+    var length by mutableStateOf(editor.length)
+    var lineCount by mutableStateOf(editor.lineCount)
     var windowSizePx by mutableStateOf(IntSize.Zero)
     var windowOffsetPx by mutableStateOf(IntOffset.Zero)
 
@@ -49,17 +51,45 @@ class DedState(
         cursorPos = editor.cursor
     }
 
-    val length: Int
-        get() = editor.length
-
-    val lineCount: Int
-        get() = editor.lineCount
-
     fun getCharAt(position: Int) = editor.getCharAt(position)
+
+    fun getRowColOfCursor() = editor.getRowColOfCursor()
 
     fun insert(value: String) {
         editor.insert(value)
         cursorPos = editor.cursor
+        length = editor.length
+        lineCount = editor.lineCount
+    }
+
+    fun delete(count: Int) {
+        editor.delete(count)
+        cursorPos = editor.cursor
+        length = editor.length
+        lineCount = editor.lineCount
+    }
+
+    fun backspace() {
+        if (cursorPos == 0) return
+        editor.moveBy(-1)
+        editor.delete(1)
+        cursorPos = editor.cursor
+        length = editor.length
+        lineCount = editor.lineCount
+    }
+
+    fun undo() {
+        editor.undo()
+        cursorPos = editor.cursor
+        length = editor.length
+        lineCount = editor.lineCount
+    }
+
+    fun redo() {
+        editor.redo()
+        cursorPos = editor.cursor
+        length = editor.length
+        lineCount = editor.lineCount
     }
 
     companion object {

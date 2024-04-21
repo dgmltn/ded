@@ -89,7 +89,25 @@ internal class EditorTest {
     }
 
     @Test
+    fun test2_moveTo() {
+        editor.cursor shouldEqual 0
+        editor.length shouldEqual 0
+        editor.moveTo(5)
+        editor.cursor shouldEqual 0
+        editor.moveTo(-1)
+        editor.cursor shouldEqual 0
+        editor.insert("test")
+        editor.moveTo(2)
+        editor.cursor shouldEqual 2
+        editor.moveTo(10)
+        editor.cursor shouldEqual 4
+        editor.moveTo(-5)
+        editor.cursor shouldEqual 0
+    }
+
+    @Test
     fun test1_lineCount() {
+        editor.lineCount shouldEqual 0
         editor.insert("hello world")
         editor.value shouldEqual "hello world"
         editor.lineCount shouldEqual 1
@@ -139,6 +157,37 @@ internal class EditorTest {
     fun test4_getRowColOf() {
         editor.insert("hello\nworld\nline3\nline4")
         editor.getRowColOf(15) shouldEqual RowCol(2, 3)
+    }
+
+    @Test
+    fun test5_getRangeOfRow() {
+        editor.getRangeOfRow(0) shouldEqual 0..0
+        editor.insert("hello")
+        editor.getRangeOfRow(0) shouldEqual 0..4
+        editor.insert("\n")
+        editor.getRangeOfRow(0) shouldEqual 0..5
+        editor.insert("world\nline3")
+        editor.getRangeOfRow(1) shouldEqual 6..11
+    }
+
+    @Test
+    fun test6_delete() {
+        editor.cursor shouldEqual 0
+        editor.delete(1) shouldEqual 0
+        editor.insert("hello")
+        editor.cursor shouldEqual 5
+        editor.delete(1) shouldEqual 0
+        editor.value shouldEqual "hello"
+        editor.moveBy(-1)
+        editor.cursor shouldEqual 4
+        editor.delete(2) shouldEqual 1
+        editor.value shouldEqual "hell"
+        editor.moveBy(-4)
+        editor.delete(1) shouldEqual 1
+        editor.value shouldEqual "ell"
+        editor.delete(3) shouldEqual 3
+        editor.value shouldEqual ""
+        editor.delete(5) shouldEqual 0
     }
 
     private infix fun Any?.shouldEqual(expected: Any?) {

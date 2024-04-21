@@ -8,16 +8,27 @@ data class RowCol(val row: Int, val col: Int) {
 
 interface Editor {
     // Editing
+    /**
+     * Cursor can be 0 - length. Special cases have to be handled when cursor == length.
+     */
     var cursor: Int
 
-    fun moveTo(position: Int)
+    /**
+     * [position] can be any number. If it's outside the range 0..length, Editor will
+     * coerce in range.
+     */
+    fun moveTo(position: Int) {
+        val l = length
+        if (l == 0) return
+        cursor = position.coerceIn(0, l)
+    }
 
     fun moveTo(rowCol: RowCol) {
         moveTo(getPositionOf(rowCol))
     }
 
     fun moveBy(delta: Int) {
-        moveTo((cursor + delta).coerceIn(0, length))
+        moveTo(cursor + delta)
     }
 
     fun moveBy(rowColDelta: RowCol) {
@@ -40,7 +51,10 @@ interface Editor {
 
     fun insert(value: String)
 
-    fun delete(count: Int)
+    /**
+     * Returns the number of characters that were actually deleted
+     */
+    fun delete(count: Int): Int
 
     fun canUndo(): Boolean
 
@@ -72,4 +86,6 @@ interface Editor {
     }
 
     fun getRowColOf(position: Int): RowCol
+
+    fun getRowColOfCursor() = getRowColOf(cursor)
 }

@@ -17,9 +17,9 @@ class EditsBuffer {
         index = edits.size
     }
 
-    fun canUndo() = index > 0
+    fun canUndo() = edits.size != 0 && index > 0
 
-    fun canRedo() = index < edits.size
+    fun canRedo() = edits.size != 0 && index < edits.size
 
     fun redo(): Edit {
         check(canRedo())

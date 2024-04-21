@@ -9,7 +9,7 @@ class StringBuilderEditor: Editor {
         get() = builder.toString()
 
     override val lineCount: Int
-        get() = builder.count { it == '\n' } + if (builder.last() == '\n') 0 else 1
+        get() = if (length == 0) 0 else builder.count { it == '\n' } + if (builder.last() == '\n') 0 else 1
 
     override val length: Int
         get() = builder.length
@@ -18,22 +18,22 @@ class StringBuilderEditor: Editor {
 
     private val edits = EditsBuffer()
 
-    override fun moveTo(position: Int) {
-        Logger.e("DOUG: cursor -> $position")
-        cursor = position
-    }
-
     override fun insert(value: String) {
         val edit = Edit.Insert(cursor, value)
         edits.add(edit)
         perform(edit)
     }
 
-    override fun delete(count: Int) {
-        val value = getSubstring(cursor, cursor + count)
+    override fun delete(count: Int): Int {
+        val maxDeletableCount = length - cursor
+        val adjusted = count.coerceAtMost(maxDeletableCount)
+        if (adjusted <= 0) return 0
+
+        val value = getSubstring(cursor, cursor + adjusted)
         val edit = Edit.Delete(cursor, value)
         edits.add(edit)
         perform(edit)
+        return adjusted
     }
 
     override fun canUndo() = edits.canUndo()
@@ -73,6 +73,9 @@ class StringBuilderEditor: Editor {
     }
 
     override fun getRangeOfRow(row: Int): IntRange {
+        // Edge case
+        if (row == 0 && builder.isEmpty()) return 0..0
+
         var startIndex = 0
         var endIndex = builder.indexOf("\n", startIndex)
         var current = 0
