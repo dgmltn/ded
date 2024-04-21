@@ -18,9 +18,12 @@ import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.IntSize
+import co.touchlab.kermit.Logger
 import com.dgmltn.ded.numDigits
 
 private const val GLYPH = "W"
+private val END = Char(0)
+private val NEWLINE = '\n'
 
 @Composable
 fun DedGrid(
@@ -45,8 +48,11 @@ fun DedGrid(
                 color = colors.lineNumber
             )
             (0 .. state.length).forEach { i ->
-                val c = if (i == state.length) Char(0) else state.getCharAt(i)
-                if (c != '\n' && c != Char(0)) CellGlyph(row, col + lineNumberXOffset, c, colors.text)
+                val c = if (i == state.length) END else state.getCharAt(i)
+                Logger.e { "DOUG: $c ($row, $col)" }
+                if (c != NEWLINE && c != END) {
+                    CellGlyph(row, col + lineNumberXOffset, c, colors.text)
+                }
                 if (i == state.cursorPos) {
                     Cursor(
                         row = row,
@@ -55,7 +61,7 @@ fun DedGrid(
                     )
                 }
                 col++
-                if (c == '\n') {
+                if (c == NEWLINE) {
                     row++
                     col = 0
                     LineNumber(
@@ -111,6 +117,7 @@ private fun InternalDedGrid(
 
         layout(constraints.maxWidth, constraints.maxHeight) {
             // Place children in the parent layout
+            Logger.e { "DOUG: placing ${placeables.size} placeables" }
             placeables.forEach { placeable ->
                 // Position item on the screen
                 (placeable.parentData as? DedChildDataNode)?.let {
