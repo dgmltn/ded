@@ -19,7 +19,6 @@ interface Editor {
      */
     fun moveTo(position: Int) {
         val l = length
-        if (l == 0) return
         cursor = position.coerceIn(0, l)
     }
 

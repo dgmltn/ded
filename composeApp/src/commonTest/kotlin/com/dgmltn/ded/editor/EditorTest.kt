@@ -14,7 +14,7 @@ internal class EditorTest {
     }
 
     @Test
-    fun test0_basic() {
+    fun basic_suite() {
         editor.cursor shouldEqual 0
         editor.canRedo() shouldEqual false
         editor.canUndo() shouldEqual false
@@ -82,14 +82,14 @@ internal class EditorTest {
     }
 
     @Test
-    fun test1_cursor() {
+    fun cursor() {
         editor.cursor shouldEqual 0
         editor.insert("hello world")
         editor.cursor shouldEqual 11
     }
 
     @Test
-    fun test2_moveTo() {
+    fun moveTo() {
         editor.cursor shouldEqual 0
         editor.length shouldEqual 0
         editor.moveTo(5)
@@ -106,7 +106,7 @@ internal class EditorTest {
     }
 
     @Test
-    fun test1_lineCount() {
+    fun lineCount() {
         editor.lineCount shouldEqual 0
         editor.insert("hello world")
         editor.value shouldEqual "hello world"
@@ -120,7 +120,7 @@ internal class EditorTest {
     }
 
     @Test
-    fun test1_lines() {
+    fun lines() {
         editor.insert("hello world")
         editor.value shouldEqual "hello world"
 
@@ -137,7 +137,7 @@ internal class EditorTest {
     }
 
     @Test
-    fun test2_getLine() {
+    fun getLine() {
         editor.insert("hello\nworld\nline3\nline4")
         editor.value shouldEqual "hello\nworld\nline3\nline4"
         editor.lineCount shouldEqual 4
@@ -147,20 +147,20 @@ internal class EditorTest {
     }
 
     @Test
-    fun test3_substring() {
+    fun substring() {
         editor.insert("hello\nworld\nline3\nline4")
         editor.value shouldEqual "hello\nworld\nline3\nline4"
         editor.getSubstring(12..17) shouldEqual "line3\n"
     }
 
     @Test
-    fun test4_getRowColOf() {
+    fun getRowColOf() {
         editor.insert("hello\nworld\nline3\nline4")
         editor.getRowColOf(15) shouldEqual RowCol(2, 3)
     }
 
     @Test
-    fun test5_getRangeOfRow() {
+    fun getRangeOfRow() {
         editor.getRangeOfRow(0) shouldEqual 0..0
         editor.insert("hello")
         editor.getRangeOfRow(0) shouldEqual 0..4
@@ -171,7 +171,7 @@ internal class EditorTest {
     }
 
     @Test
-    fun test6_delete() {
+    fun delete() {
         editor.cursor shouldEqual 0
         editor.delete(1) shouldEqual 0
         editor.insert("hello")
@@ -188,6 +188,16 @@ internal class EditorTest {
         editor.delete(3) shouldEqual 3
         editor.value shouldEqual ""
         editor.delete(5) shouldEqual 0
+    }
+
+    @Test
+    fun undo() {
+        editor.insert("hello")
+        editor.undo()
+        editor.value shouldEqual ""
+        editor.cursor shouldEqual 0
+        editor.canUndo() shouldEqual false
+        editor.canRedo() shouldEqual true
     }
 
     private infix fun Any?.shouldEqual(expected: Any?) {
