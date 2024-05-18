@@ -1,5 +1,6 @@
 package com.dgmltn.ded.ui
 
+import DedColors
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
@@ -9,13 +10,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 
+private val END = Char(0)
+private const val NEWLINE = '\n'
+
 interface DedScope {
-    val textMeasurer: TextMeasurer
     val cellSize: IntSize
+    val colors: DedColors
+    val lineNumberXOffset: Int
 
     @Composable
     fun Modifier.position(row: Int, col: Int) = this.then(
@@ -26,25 +30,28 @@ interface DedScope {
     )
 
     @Composable
-    fun Cursor(
-        row: Int,
-        col: Int,
-        color: Color,
-    ) {
+    fun Cursor(row: Int, col: Int) {
         Box(
             modifier = Modifier
                 .position(row, col)
-                .background(color)
+                .background(colors.cursor)
         )
     }
 
     @Composable
-    fun LineNumber(
-        row: Int,
-        color: Color,
-    ) {
+    fun LineNumberGlyphs(row: Int) {
         // row+1 here because humans are used to 1-based line numbers
-        CellGlyphs(row, 0, (row + 1).toString(), color)
+        CellGlyphs(row, 0, (row + 1).toString(), colors.lineNumber)
+    }
+
+    @Composable
+    fun BodyGlyph(row: Int, col: Int, glyph: Char) {
+        CellGlyph(row, col + lineNumberXOffset, glyph, colors.text)
+    }
+
+    @Composable
+    fun BodyGlyphs(row: Int, col: Int, glyphs: String) {
+        CellGlyphs(row, col + lineNumberXOffset, glyphs, colors.text)
     }
 
     @Composable
@@ -76,6 +83,46 @@ interface DedScope {
                 glyph = c,
                 color = color,
             )
+        }
+    }
+
+    @Composable
+    fun AllVisibleGlyphs(
+        length: Int,
+        getCharAt: (Int) -> Char,
+        cursorPos: Int,
+    ) {
+        var row = 0
+        var col = 0
+
+        (0..length).forEach { i ->
+            val c = if (i == length) END else getCharAt(i)
+
+            // Draw line number
+            if (col == 0) {
+                LineNumberGlyphs(row)
+            }
+
+            // Draw glyph (if it's drawable)
+            if (c != NEWLINE && c != END) {
+                BodyGlyph(row, col, c)
+            }
+
+            // Draw cursor
+            if (i == cursorPos) {
+                Cursor(
+                    row = row,
+                    col = col + lineNumberXOffset,
+                )
+            }
+
+            // Update col, row
+            if (c == NEWLINE) {
+                row++
+                col = 0
+            } else {
+                col++
+            }
         }
     }
 }

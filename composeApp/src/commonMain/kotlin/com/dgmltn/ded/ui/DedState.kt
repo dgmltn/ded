@@ -3,6 +3,7 @@ package com.dgmltn.ded.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -30,6 +31,7 @@ class DedState(
     var lineCount by mutableStateOf(editor.lineCount)
     var windowSizePx by mutableStateOf(IntSize.Zero)
     var windowOffsetPx by mutableStateOf(IntOffset.Zero)
+    var windowSizeCells by mutableStateOf(IntSize.Zero)
 
     fun moveNextRow() {
         editor.moveBy(RowCol(1, 0))
