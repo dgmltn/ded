@@ -19,7 +19,7 @@ private const val NEWLINE = '\n'
 interface DedScope {
     val cellSize: IntSize
     val colors: DedColors
-    val lineNumberXOffset: Int
+    val cellOffset: IntOffset
 
     @Composable
     fun Modifier.position(row: Int, col: Int) = this.then(
@@ -46,12 +46,12 @@ interface DedScope {
 
     @Composable
     fun BodyGlyph(row: Int, col: Int, glyph: Char) {
-        CellGlyph(row, col + lineNumberXOffset, glyph, colors.text)
+        CellGlyph(row + cellOffset.y, col + cellOffset.x, glyph, colors.text)
     }
 
     @Composable
     fun BodyGlyphs(row: Int, col: Int, glyphs: String) {
-        CellGlyphs(row, col + lineNumberXOffset, glyphs, colors.text)
+        CellGlyphs(row + cellOffset.y, col + cellOffset.x, glyphs, colors.text)
     }
 
     @Composable
@@ -111,8 +111,8 @@ interface DedScope {
             // Draw cursor
             if (i == cursorPos) {
                 Cursor(
-                    row = row,
-                    col = col + lineNumberXOffset,
+                    row = row + cellOffset.y,
+                    col = col + cellOffset.x,
                 )
             }
 

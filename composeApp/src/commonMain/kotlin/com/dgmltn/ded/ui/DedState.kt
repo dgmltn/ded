@@ -3,7 +3,6 @@ package com.dgmltn.ded.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -12,86 +11,92 @@ import androidx.compose.ui.unit.IntSize
 import com.dgmltn.ded.editor.Editor
 import com.dgmltn.ded.editor.RowCol
 import com.dgmltn.ded.editor.StringBuilderEditor
-
+import com.dgmltn.ded.editor.language.JavascriptLanguageConfig
+import com.dgmltn.ded.editor.language.LanguageConfig
+import com.dgmltn.ded.numDigits
 
 @Composable
 fun rememberDedState(
     editor: Editor = StringBuilderEditor(),
+    languageConfig: LanguageConfig = JavascriptLanguageConfig()
 ): DedState {
     return rememberSaveable(saver = DedState.Saver) {
-        DedState(editor)
+        DedState(editor, languageConfig)
     }
 }
 
 class DedState(
     private val editor: Editor = StringBuilderEditor(),
+    val languageConfig: LanguageConfig = JavascriptLanguageConfig()
 ) {
     var cursorPos by mutableStateOf(editor.cursor)
     var length by mutableStateOf(editor.length)
     var lineCount by mutableStateOf(editor.lineCount)
+    var cellOffset by mutableStateOf(IntOffset.Zero)
+
     var windowSizePx by mutableStateOf(IntSize.Zero)
     var windowOffsetPx by mutableStateOf(IntOffset.Zero)
-    var windowSizeCells by mutableStateOf(IntSize.Zero)
+    var cellSize by mutableStateOf(IntSize.Zero)
 
-    fun moveNextRow() {
+    fun moveNextRow(): Boolean {
+        if (cursorPos == length) return false
         editor.moveBy(RowCol(1, 0))
         cursorPos = editor.cursor
+        return true
     }
 
-    fun movePrevRow() {
+    fun movePrevRow(): Boolean {
+        if (cursorPos == 0) return false
         editor.moveBy(RowCol(-1, 0))
         cursorPos = editor.cursor
+        return true
     }
 
-    fun moveFwd() {
+    fun moveFwd(): Boolean {
+        if (cursorPos == length) return false
         editor.moveBy(1)
         cursorPos = editor.cursor
+        return true
     }
 
-    fun moveBack() {
+    fun moveBack(): Boolean {
+        if (cursorPos == 0) return false
         editor.moveBy(-1)
         cursorPos = editor.cursor
+        return true
+    }
+
+    fun moveTo(rowCol: RowCol): Int {
+        editor.moveTo(rowCol)
+        cursorPos = editor.cursor
+        return cursorPos
     }
 
     fun getCharAt(position: Int) = editor.getCharAt(position)
 
     fun getRowColOfCursor() = editor.getRowColOfCursor()
 
-    fun insert(value: String) {
-        editor.insert(value)
-        cursorPos = editor.cursor
-        length = editor.length
-        lineCount = editor.lineCount
-    }
+    fun insert(value: String) = editor.insert(value).also { syncWithEditor() }
 
-    fun delete(count: Int) {
-        editor.delete(count)
-        cursorPos = editor.cursor
-        length = editor.length
-        lineCount = editor.lineCount
-    }
+    fun delete(count: Int) = editor.delete(count).also { syncWithEditor() }
 
-    fun backspace() {
-        if (cursorPos == 0) return
+    fun backspace(): Boolean {
+        if (cursorPos == 0) return false
         editor.moveBy(-1)
         editor.delete(1)
-        cursorPos = editor.cursor
-        length = editor.length
-        lineCount = editor.lineCount
+        syncWithEditor()
+        return true
     }
 
-    fun undo() {
-        editor.undo()
-        cursorPos = editor.cursor
-        length = editor.length
-        lineCount = editor.lineCount
-    }
+    fun undo() = editor.undo().also { syncWithEditor() }
 
-    fun redo() {
-        editor.redo()
+    fun redo() = editor.redo().also { syncWithEditor() }
+
+    private fun syncWithEditor() {
         cursorPos = editor.cursor
         length = editor.length
         lineCount = editor.lineCount
+        cellOffset = cellOffset.copy(x = editor.lineCount.numDigits() + 1)
     }
 
     companion object {

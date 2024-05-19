@@ -18,10 +18,10 @@ class StringBuilderEditor: Editor {
 
     private val edits = EditsBuffer()
 
-    override fun insert(value: String) {
+    override fun insert(value: String): Boolean {
         val edit = Edit.Insert(cursor, value)
         edits.add(edit)
-        perform(edit)
+        return perform(edit)
     }
 
     override fun delete(count: Int): Int {
@@ -38,18 +38,20 @@ class StringBuilderEditor: Editor {
 
     override fun canUndo() = edits.canUndo()
 
-    override fun undo() {
-        if (!canUndo()) return
+    override fun undo(): Boolean {
+        if (!canUndo()) return false
         val edit = edits.undo().undo()
         perform(edit)
+        return true
     }
 
     override fun canRedo() = edits.canRedo()
 
-    override fun redo() {
-        if (!canRedo()) return
+    override fun redo(): Boolean {
+        if (!canRedo()) return false
         val edit = edits.redo()
         perform(edit)
+        return true
     }
 
     override fun getCharAt(position: Int) = builder[position]
@@ -108,16 +110,17 @@ class StringBuilderEditor: Editor {
         return RowCol(row, col)
     }
 
-    private fun perform(edit: Edit) {
+    private fun perform(edit: Edit): Boolean =
         when (edit) {
             is Edit.Insert -> {
                 builder.insert(edit.position, edit.value)
                 moveTo(edit.position + edit.value.length)
+                true
             }
             is Edit.Delete -> {
                 builder.deleteRange(edit.position, edit.position + edit.value.length)
                 moveTo(edit.position)
+                true
             }
         }
-    }
 }

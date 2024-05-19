@@ -17,23 +17,24 @@ interface Editor {
      * [position] can be any number. If it's outside the range 0..length, Editor will
      * coerce in range.
      */
-    fun moveTo(position: Int) {
+    fun moveTo(position: Int): Int {
         val l = length
         cursor = position.coerceIn(0, l)
+        return cursor
     }
 
-    fun moveTo(rowCol: RowCol) {
-        moveTo(getPositionOf(rowCol))
+    fun moveTo(rowCol: RowCol): Int {
+        return moveTo(getPositionOf(rowCol))
     }
 
-    fun moveBy(delta: Int) {
-        moveTo(cursor + delta)
+    fun moveBy(delta: Int): Int {
+        return moveTo(cursor + delta)
     }
 
-    fun moveBy(rowColDelta: RowCol) {
+    fun moveBy(rowColDelta: RowCol): Int {
         val rowCol = getRowColOf(cursor)
         val nextRow = rowCol.row + rowColDelta.row
-        if (nextRow < 0) {
+        return if (nextRow < 0) {
             moveTo(0)
         }
         else if (nextRow >= lineCount) {
@@ -48,7 +49,10 @@ interface Editor {
         }
     }
 
-    fun insert(value: String)
+    /**
+     * Returns true if the value was inserted
+     */
+    fun insert(value: String): Boolean
 
     /**
      * Returns the number of characters that were actually deleted
@@ -57,11 +61,11 @@ interface Editor {
 
     fun canUndo(): Boolean
 
-    fun undo()
+    fun undo(): Boolean
 
     fun canRedo(): Boolean
 
-    fun redo()
+    fun redo(): Boolean
 
     // Reading
     val value: String

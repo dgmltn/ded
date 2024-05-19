@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import com.dgmltn.ded.div
 import com.dgmltn.ded.numDigits
@@ -29,34 +30,27 @@ fun DedGrid(
     colors: DedColors = LocalDefaults.current.editor
 ) {
     val textMeasurer = rememberTextMeasurer()
-    var cellSize by remember { mutableStateOf(IntSize(16, 24)) }
-    var windowSize by remember { mutableStateOf(IntSize.Zero) }
 
     LaunchedEffect(GLYPH, textStyle) {
-        cellSize = textMeasurer.measure(GLYPH, textStyle).size
-    }
-
-    LaunchedEffect(windowSize, cellSize) {
-        state.windowSizePx = windowSize
-        state.windowSizeCells = windowSize.div(cellSize)
+        state.cellSize = textMeasurer.measure(GLYPH, textStyle).size
     }
 
     val scope = remember {
         object : DedScope {
             override val cellSize: IntSize
-                get() = cellSize
+                get() = state.cellSize
 
             override val colors
                 get() = colors
 
-            override val lineNumberXOffset
-                get() = state.lineCount.numDigits() + 1
+            override val cellOffset: IntOffset
+                get() = state.cellOffset
         }
     }
 
     Box(
         modifier = modifier
-            .onSizeChanged { windowSize = it },
+            .onSizeChanged { state.windowSizePx = it },
     ) {
         CompositionLocalProvider(
             LocalTextStyle provides textStyle,
