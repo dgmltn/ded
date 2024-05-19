@@ -36,39 +36,45 @@ class DedState(
 
     var windowSizePx by mutableStateOf(IntSize.Zero)
     var windowOffsetPx by mutableStateOf(IntOffset.Zero)
-    var cellSize by mutableStateOf(IntSize.Zero)
+    var cellSizePx by mutableStateOf(IntSize.Zero)
 
     fun moveNextRow(): Boolean {
         if (cursorPos == length) return false
         editor.moveBy(RowCol(1, 0))
-        cursorPos = editor.cursor
+        syncWithEditor()
         return true
     }
 
     fun movePrevRow(): Boolean {
         if (cursorPos == 0) return false
         editor.moveBy(RowCol(-1, 0))
-        cursorPos = editor.cursor
+        syncWithEditor()
         return true
     }
 
     fun moveFwd(): Boolean {
         if (cursorPos == length) return false
         editor.moveBy(1)
-        cursorPos = editor.cursor
+        syncWithEditor()
         return true
     }
 
     fun moveBack(): Boolean {
         if (cursorPos == 0) return false
         editor.moveBy(-1)
-        cursorPos = editor.cursor
+        syncWithEditor()
         return true
+    }
+
+    fun moveTo(position: Int): Int {
+        editor.moveTo(position)
+        syncWithEditor()
+        return cursorPos
     }
 
     fun moveTo(rowCol: RowCol): Int {
         editor.moveTo(rowCol)
-        cursorPos = editor.cursor
+        syncWithEditor()
         return cursorPos
     }
 

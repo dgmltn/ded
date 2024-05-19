@@ -6,6 +6,7 @@ import LocalDefaults
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -24,7 +25,6 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import co.touchlab.kermit.Logger
 import com.dgmltn.ded.editor.RowCol
@@ -39,18 +39,18 @@ fun Ded(
     val focusRequester = remember { FocusRequester() }
     var statusText by remember { mutableStateOf("") }
 
-    LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
-    }
-
     val dedState = rememberDedState(
-        editor = StringBuilderEditor()
-            .apply {
-                insert("Hello, world\nthis is a test\nLine #3")
-                moveTo(5)
-            },
+        editor = StringBuilderEditor(),
         languageConfig = JavascriptLanguageConfig()
     )
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+        dedState.run {
+            insert("Hello, world\nthis is a test\nLine #3")
+            moveTo(5)
+        }
+    }
 
     Box(
         modifier = modifier
@@ -88,18 +88,30 @@ fun Modifier.dedKeyEvent(dedState: DedState) = then(
 @Composable
 fun Modifier.detectSelectGestures(
     dedState: DedState,
-) = this.pointerInput(Unit) {
-    detectDragGestures(
-        onDragStart = { offset ->
-            val col = (offset.x / dedState.cellSize.width).toInt() - dedState.cellOffset.x
-            val row = ((offset.y / dedState.cellSize.height).toInt() - dedState.cellOffset.y).coerceIn(0, dedState.lineCount - 1)
+) = this
+    .pointerInput(Unit) {
+        detectTapGestures { offset ->
+            val col = (offset.x / dedState.cellSizePx.width).toInt() - dedState.cellOffset.x
+            val row = ((offset.y / dedState.cellSizePx.height).toInt() - dedState.cellOffset.y)
+                    .coerceIn(0, dedState.lineCount - 1)
             dedState.moveTo(RowCol(row, col))
-        },
-        onDrag = { change, dragAmount ->
-            val col = (change.position.x / dedState.cellSize.width).toInt() - dedState.cellOffset.x
-            val row = ((change.position.y / dedState.cellSize.height).toInt() - dedState.cellOffset.y).coerceIn(0, dedState.lineCount - 1)
-            dedState.moveTo(RowCol(row, col))
-            change.consume()
-        },
-    )
-}
+        }
+    }
+    .pointerInput(Unit) {
+        detectDragGestures(
+            onDragStart = { offset ->
+                val col = (offset.x / dedState.cellSizePx.width).toInt() - dedState.cellOffset.x
+                val row = ((offset.y / dedState.cellSizePx.height).toInt() - dedState.cellOffset.y)
+                        .coerceIn(0, dedState.lineCount - 1)
+                dedState.moveTo(RowCol(row, col))
+            },
+            onDrag = { change, dragAmount ->
+                val col =
+                    (change.position.x / dedState.cellSizePx.width).toInt() - dedState.cellOffset.x
+                val row = ((change.position.y / dedState.cellSizePx.height).toInt() - dedState.cellOffset.y)
+                        .coerceIn(0, dedState.lineCount - 1)
+                dedState.moveTo(RowCol(row, col))
+                change.consume()
+            },
+        )
+    }
