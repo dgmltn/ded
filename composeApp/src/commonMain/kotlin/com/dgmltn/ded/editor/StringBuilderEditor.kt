@@ -5,6 +5,8 @@ import co.touchlab.kermit.Logger
 class StringBuilderEditor: Editor {
     override var cursor = 0
 
+    override var selection: IntRange? = null
+
     override val value: String
         get() = builder.toString()
 
@@ -19,7 +21,10 @@ class StringBuilderEditor: Editor {
     private val edits = EditsBuffer()
 
     override fun insert(value: String): Boolean {
-        val edit = Edit.Insert(cursor, value)
+        val edit = selection
+            ?.let { Edit.Replace(it.first, getSubstring(it), value) }
+            ?: Edit.Insert(cursor, value)
+        selection = null
         edits.add(edit)
         return perform(edit)
     }
@@ -31,6 +36,17 @@ class StringBuilderEditor: Editor {
 
         val value = getSubstring(cursor, cursor + adjusted)
         val edit = Edit.Delete(cursor, value)
+        edits.add(edit)
+        perform(edit)
+        return adjusted
+    }
+
+    override fun replace(count: Int, value: String): Int {
+        val maxDeletableCount = length - cursor
+        val adjusted = count.coerceIn(0, maxDeletableCount)
+
+        val oldValue = getSubstring(cursor, cursor + adjusted)
+        val edit = Edit.Replace(cursor, oldValue, value)
         edits.add(edit)
         perform(edit)
         return adjusted
@@ -120,6 +136,13 @@ class StringBuilderEditor: Editor {
             is Edit.Delete -> {
                 builder.deleteRange(edit.position, edit.position + edit.value.length)
                 moveTo(edit.position)
+                true
+            }
+            is Edit.Replace -> {
+                // Can't use replaceRange because that returns a whole new StringBuilder
+                builder.deleteRange(edit.position, edit.position + edit.oldValue.length)
+                builder.insert(edit.position, edit.newValue)
+                moveTo(edit.position + edit.newValue.length)
                 true
             }
         }

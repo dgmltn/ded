@@ -1,17 +1,18 @@
 package com.dgmltn.ded.editor
 
-data class RowCol(val row: Int, val col: Int) {
-    companion object {
-        val Zero = RowCol(0, 0)
-    }
-}
 
 interface Editor {
     // Editing
     /**
-     * Cursor can be 0 - length. Special cases have to be handled when cursor == length.
+     * Cursor can be between 0..length. Special cases have to be handled when cursor == length.
      */
     var cursor: Int
+
+    /**
+     * Selection is a range of characters that are selected.
+     * If selection is null, nothing is selected.
+     */
+    var selection: IntRange?
 
     /**
      * [position] can be any number. If it's outside the range 0..length, Editor will
@@ -20,6 +21,7 @@ interface Editor {
     fun moveTo(position: Int): Int {
         val l = length
         cursor = position.coerceIn(0, l)
+        selection = null
         return cursor
     }
 
@@ -49,8 +51,13 @@ interface Editor {
         }
     }
 
+    fun select(range: IntRange) {
+        selection = range
+    }
+
     /**
-     * Returns true if the value was inserted
+     * Returns true if the value was inserted. If [selection] is nonnull,
+     * the selection will be replaced.
      */
     fun insert(value: String): Boolean
 
@@ -58,6 +65,12 @@ interface Editor {
      * Returns the number of characters that were actually deleted
      */
     fun delete(count: Int): Int
+
+    /**
+     * Returns the number of characters that were actually replaced.
+     * Will replace up to [count] characters with the new value.
+     */
+    fun replace(count: Int, value: String): Int
 
     fun canUndo(): Boolean
 

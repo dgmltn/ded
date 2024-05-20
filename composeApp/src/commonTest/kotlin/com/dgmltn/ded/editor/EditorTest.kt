@@ -15,108 +15,116 @@ internal class EditorTest {
 
     @Test
     fun basic_suite() {
-        editor.cursor shouldEqual 0
-        editor.canRedo() shouldEqual false
-        editor.canUndo() shouldEqual false
+        editor.run {
+            cursor shouldEqual 0
+            canRedo() shouldEqual false
+            canUndo() shouldEqual false
 
-        // Insert
-        editor.moveTo(0)
-        editor.insert("hello world")
-        editor.value shouldEqual "hello world"
-        editor.cursor shouldEqual 11
+            // Insert
+            moveTo(0)
+            insert("hello world")
+            value shouldEqual "hello world"
+            cursor shouldEqual 11
 
-        // Insert
-        editor.moveTo(5)
-        editor.insert(" beautiful")
-        editor.value shouldEqual "hello beautiful world"
-        editor.cursor shouldEqual 15
+            // Insert
+            moveTo(5)
+            insert(" beautiful")
+            value shouldEqual "hello beautiful world"
+            cursor shouldEqual 15
 
-        // Undo insert
-        editor.canUndo() shouldEqual true
-        editor.undo()
-        editor.value shouldEqual "hello world"
-        editor.cursor shouldEqual 5
-        editor.canUndo() shouldEqual true
+            // Undo insert
+            canUndo() shouldEqual true
+            undo()
+            value shouldEqual "hello world"
+            cursor shouldEqual 5
+            canUndo() shouldEqual true
 
-        // Redo insert
-        editor.canRedo() shouldEqual true
-        editor.redo()
-        editor.value shouldEqual "hello beautiful world"
-        editor.cursor shouldEqual 15
-        editor.canRedo() shouldEqual false
+            // Redo insert
+            canRedo() shouldEqual true
+            redo()
+            value shouldEqual "hello beautiful world"
+            cursor shouldEqual 15
+            canRedo() shouldEqual false
 
-        // Undo insert
-        editor.canUndo() shouldEqual true
-        editor.undo()
-        editor.value shouldEqual "hello world"
-        editor.cursor shouldEqual 5
+            // Undo insert
+            canUndo() shouldEqual true
+            undo()
+            value shouldEqual "hello world"
+            cursor shouldEqual 5
 
-        // Typing
-        editor.insert(" ")
-        editor.insert("t")
-        editor.insert("h")
-        editor.insert("e")
-        editor.insert("r")
-        editor.insert("e")
-        editor.value shouldEqual "hello there world"
-        editor.cursor shouldEqual 11
+            // Typing
+            insert(" ")
+            insert("t")
+            insert("h")
+            insert("e")
+            insert("r")
+            insert("e")
+            value shouldEqual "hello there world"
+            cursor shouldEqual 11
 
-        // Delete
-        editor.moveTo(5)
-        editor.delete(6)
-        editor.value shouldEqual "hello world"
-        editor.cursor shouldEqual 5
+            // Delete
+            moveTo(5)
+            delete(6)
+            value shouldEqual "hello world"
+            cursor shouldEqual 5
 
-        // Undo delete
-        editor.canUndo() shouldEqual true
-        editor.undo()
-        editor.value shouldEqual "hello there world"
-        editor.cursor shouldEqual 11
+            // Undo delete
+            canUndo() shouldEqual true
+            undo()
+            value shouldEqual "hello there world"
+            cursor shouldEqual 11
 
-        // Redo delete
-        editor.canRedo() shouldEqual true
-        editor.redo()
-        editor.value shouldEqual "hello world"
-        editor.cursor shouldEqual 5
-        editor.canRedo() shouldEqual false
+            // Redo delete
+            canRedo() shouldEqual true
+            redo()
+            value shouldEqual "hello world"
+            cursor shouldEqual 5
+            canRedo() shouldEqual false
+        }
     }
 
     @Test
     fun cursor() {
-        editor.cursor shouldEqual 0
-        editor.insert("hello world")
-        editor.cursor shouldEqual 11
+        editor.run {
+            cursor shouldEqual 0
+            insert("hello world")
+            cursor shouldEqual 11
+        }
     }
 
     @Test
     fun moveTo() {
-        editor.cursor shouldEqual 0
-        editor.length shouldEqual 0
-        editor.moveTo(5)
-        editor.cursor shouldEqual 0
-        editor.moveTo(-1)
-        editor.cursor shouldEqual 0
-        editor.insert("test")
-        editor.moveTo(2)
-        editor.cursor shouldEqual 2
-        editor.moveTo(10)
-        editor.cursor shouldEqual 4
-        editor.moveTo(-5)
-        editor.cursor shouldEqual 0
+        editor.run {
+            cursor shouldEqual 0
+            length shouldEqual 0
+            moveTo(5)
+            cursor shouldEqual 0
+            moveTo(-1)
+            cursor shouldEqual 0
+            insert("test")
+            moveTo(2)
+            cursor shouldEqual 2
+            moveTo(10)
+            cursor shouldEqual 4
+            moveTo(-5)
+            cursor shouldEqual 0
+        }
     }
 
     @Test
     fun lineCount() {
-        editor.lineCount shouldEqual 0
-        editor.insert("hello world")
-        editor.value shouldEqual "hello world"
-        editor.lineCount shouldEqual 1
-        editor.insert("\n")
-        editor.lineCount shouldEqual 1
-        editor.insert("line #2")
-        editor.lineCount shouldEqual 2
-        editor.insert("\nline #3\n")
-        editor.lineCount shouldEqual 3
+        editor.run {
+            lineCount shouldEqual 0
+            insert("hello world")
+            value shouldEqual "hello world"
+            lineCount shouldEqual 1
+            insert("\n")
+            lineCount shouldEqual 1
+            insert("line #2")
+            lineCount shouldEqual 2
+            insert("\nline #3\n")
+            lineCount shouldEqual 3
+        }
     }
 
     @Test
@@ -138,66 +146,120 @@ internal class EditorTest {
 
     @Test
     fun getLine() {
-        editor.insert("hello\nworld\nline3\nline4")
-        editor.value shouldEqual "hello\nworld\nline3\nline4"
-        editor.lineCount shouldEqual 4
-        editor.getRangeOfRow(0) shouldEqual 0..5
-        editor.getRangeOfRow(1) shouldEqual 6..11
-        editor.getRangeOfRow(3) shouldEqual 18..22
+        editor.run {
+            insert("hello\nworld\nline3\nline4")
+            value shouldEqual "hello\nworld\nline3\nline4"
+            lineCount shouldEqual 4
+            getRangeOfRow(0) shouldEqual 0..5
+            getRangeOfRow(1) shouldEqual 6..11
+            getRangeOfRow(3) shouldEqual 18..22
+        }
     }
 
     @Test
     fun substring() {
-        editor.insert("hello\nworld\nline3\nline4")
-        editor.value shouldEqual "hello\nworld\nline3\nline4"
-        editor.getSubstring(12..17) shouldEqual "line3\n"
+        editor.run {
+            insert("hello\nworld\nline3\nline4")
+            value shouldEqual "hello\nworld\nline3\nline4"
+            getSubstring(12..17) shouldEqual "line3\n"
+        }
     }
 
     @Test
     fun getRowColOf() {
-        editor.insert("hello\nworld\nline3\nline4")
-        editor.getRowColOf(15) shouldEqual RowCol(2, 3)
+        editor.run {
+            insert("hello\nworld\nline3\nline4")
+            getRowColOf(15) shouldEqual RowCol(2, 3)
+        }
     }
 
     @Test
     fun getRangeOfRow() {
-        editor.getRangeOfRow(0) shouldEqual 0..0
-        editor.insert("hello")
-        editor.getRangeOfRow(0) shouldEqual 0..4
-        editor.insert("\n")
-        editor.getRangeOfRow(0) shouldEqual 0..5
-        editor.insert("world\nline3")
-        editor.getRangeOfRow(1) shouldEqual 6..11
+        editor.run {
+            getRangeOfRow(0) shouldEqual 0..0
+            insert("hello")
+            getRangeOfRow(0) shouldEqual 0..4
+            insert("\n")
+            getRangeOfRow(0) shouldEqual 0..5
+            insert("world\nline3")
+            getRangeOfRow(1) shouldEqual 6..11
+        }
     }
 
     @Test
     fun delete() {
-        editor.cursor shouldEqual 0
-        editor.delete(1) shouldEqual 0
-        editor.insert("hello")
-        editor.cursor shouldEqual 5
-        editor.delete(1) shouldEqual 0
-        editor.value shouldEqual "hello"
-        editor.moveBy(-1)
-        editor.cursor shouldEqual 4
-        editor.delete(2) shouldEqual 1
-        editor.value shouldEqual "hell"
-        editor.moveBy(-4)
-        editor.delete(1) shouldEqual 1
-        editor.value shouldEqual "ell"
-        editor.delete(3) shouldEqual 3
-        editor.value shouldEqual ""
-        editor.delete(5) shouldEqual 0
+        editor.run {
+            cursor shouldEqual 0
+            delete(1) shouldEqual 0
+            insert("hello")
+            cursor shouldEqual 5
+            delete(1) shouldEqual 0
+            value shouldEqual "hello"
+            moveBy(-1)
+            cursor shouldEqual 4
+            delete(2) shouldEqual 1
+            value shouldEqual "hell"
+            moveBy(-4)
+            delete(1) shouldEqual 1
+            value shouldEqual "ell"
+            delete(3) shouldEqual 3
+            value shouldEqual ""
+            delete(5) shouldEqual 0
+        }
+    }
+
+    @Test
+    fun replace() {
+        editor.run {
+            insert("hello")
+            moveTo(1)
+            replace(1, "a") shouldEqual 1
+            value shouldEqual "hallo"
+            moveTo(5)
+            replace(5, " world") shouldEqual 0
+            value shouldEqual "hallo world"
+            moveTo(1)
+            replace(1, "world") shouldEqual 1
+            value shouldEqual "hworldllo world"
+            undo()
+            value shouldEqual "hallo world"
+            undo()
+            value shouldEqual "hallo"
+            undo()
+            value shouldEqual "hello"
+        }
     }
 
     @Test
     fun undo() {
-        editor.insert("hello")
-        editor.undo()
-        editor.value shouldEqual ""
-        editor.cursor shouldEqual 0
-        editor.canUndo() shouldEqual false
-        editor.canRedo() shouldEqual true
+        editor.run {
+            insert("hello")
+            undo()
+            value shouldEqual ""
+            cursor shouldEqual 0
+            canUndo() shouldEqual false
+            canRedo() shouldEqual true
+        }
+    }
+
+    @Test
+    fun selection() {
+        editor.run {
+            insert("hello world")
+            select(0..5)
+            selection shouldEqual 0..5
+            insert("!")
+            value shouldEqual "!world"
+            selection shouldEqual null
+            undo()
+            value shouldEqual "hello world"
+            selection shouldEqual null
+            redo()
+            value shouldEqual "!world"
+            selection shouldEqual null
+            insert("[]")
+            value shouldEqual "![]world"
+        }
     }
 
     private infix fun Any?.shouldEqual(expected: Any?) {

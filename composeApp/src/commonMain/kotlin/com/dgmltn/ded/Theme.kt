@@ -60,6 +60,8 @@ interface DedColorScheme {
     val editorCursor: Color
     val editorLineNumber: Color
     val editorText: Color
+    val editorSelectionBg: Color
+    val editorSelectionFg: Color
     //TODO: other editor colors
 
     //TODO: syntax hilight colors
@@ -121,6 +123,8 @@ object DedColorSchemeDark : DedColorScheme {
     override val editorCursor = base.onBackground.copy(alpha = 0.5f)
     override val editorLineNumber = base.onBackground.copy(alpha = 0.5f)
     override val editorText = base.onBackground
+    override val editorSelectionBg = base.primary.copy(alpha = 0.5f)
+    override val editorSelectionFg = base.onPrimary
 }
 
 object DedColorSchemeLight: DedColorScheme {
@@ -144,6 +148,8 @@ object DedColorSchemeLight: DedColorScheme {
     override val editorCursor = base.onBackground.copy(alpha = 0.5f)
     override val editorLineNumber = base.onBackground.copy(alpha = 0.5f)
     override val editorText = base.onBackground
+    override val editorSelectionBg = base.primary.copy(alpha = 0.5f)
+    override val editorSelectionFg = base.onPrimary
 }
 
 object DedShapes {
@@ -185,6 +191,8 @@ object DedThemeDefaults {
             cursor = DedTheme.colors.editorCursor,
             lineNumber = DedTheme.colors.editorLineNumber,
             text = DedTheme.colors.editorText,
+            selectionBg = DedTheme.colors.editorSelectionBg,
+            selectionFg = DedTheme.colors.editorSelectionFg,
         )
 }
 
@@ -193,6 +201,8 @@ data class DedColors(
     val cursor: Color,
     val lineNumber: Color,
     val text: Color,
+    val selectionBg: Color,
+    val selectionFg: Color,
 )
 
 object DedTypography {

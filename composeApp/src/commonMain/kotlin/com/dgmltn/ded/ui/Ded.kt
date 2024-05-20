@@ -98,12 +98,15 @@ fun Modifier.detectSelectGestures(
         }
     }
     .pointerInput(Unit) {
+        var selectionStartCursorPos: Int? = null
         detectDragGestures(
             onDragStart = { offset ->
                 val col = (offset.x / dedState.cellSizePx.width).toInt() - dedState.cellOffset.x
                 val row = ((offset.y / dedState.cellSizePx.height).toInt() - dedState.cellOffset.y)
                         .coerceIn(0, dedState.lineCount - 1)
                 dedState.moveTo(RowCol(row, col))
+                selectionStartCursorPos = dedState.cursorPos
+                dedState.select(selectionStartCursorPos!!..dedState.cursorPos)
             },
             onDrag = { change, dragAmount ->
                 val col =
@@ -111,7 +114,19 @@ fun Modifier.detectSelectGestures(
                 val row = ((change.position.y / dedState.cellSizePx.height).toInt() - dedState.cellOffset.y)
                         .coerceIn(0, dedState.lineCount - 1)
                 dedState.moveTo(RowCol(row, col))
+                dedState.select(
+                    if (selectionStartCursorPos!! < dedState.cursorPos)
+                        selectionStartCursorPos!!..dedState.cursorPos
+                    else
+                        dedState.cursorPos..selectionStartCursorPos!!
+                )
                 change.consume()
             },
+            onDragEnd = {
+                selectionStartCursorPos = null
+            },
+            onDragCancel = {
+                selectionStartCursorPos = null
+            }
         )
     }

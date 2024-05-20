@@ -30,6 +30,7 @@ class DedState(
     val languageConfig: LanguageConfig = JavascriptLanguageConfig()
 ) {
     var cursorPos by mutableStateOf(editor.cursor)
+    var selection by mutableStateOf(editor.selection)
     var length by mutableStateOf(editor.length)
     var lineCount by mutableStateOf(editor.lineCount)
     var cellOffset by mutableStateOf(IntOffset.Zero)
@@ -78,6 +79,11 @@ class DedState(
         return cursorPos
     }
 
+    fun select(range: IntRange) {
+        editor.select(range)
+        syncWithEditor()
+    }
+
     fun getCharAt(position: Int) = editor.getCharAt(position)
 
     fun getRowColOfCursor() = editor.getRowColOfCursor()
@@ -100,6 +106,7 @@ class DedState(
 
     private fun syncWithEditor() {
         cursorPos = editor.cursor
+        selection = editor.selection
         length = editor.length
         lineCount = editor.lineCount
         cellOffset = cellOffset.copy(x = editor.lineCount.numDigits() + 1)

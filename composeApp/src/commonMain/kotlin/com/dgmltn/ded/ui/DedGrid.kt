@@ -32,7 +32,7 @@ fun DedGrid(
 
     val scope = remember {
         object : DedScope {
-            override val cellSize: IntSize
+            override val cellSize
                 get() = state.cellSizePx
 
             override val colors
@@ -50,7 +50,7 @@ fun DedGrid(
         CompositionLocalProvider(
             LocalTextStyle provides textStyle,
         ) {
-            scope.AllVisibleGlyphs(state.length, state::getCharAt, state.cursorPos)
+            scope.AllVisibleGlyphs(state.length, state::getCharAt, state.cursorPos, state.selection)
         }
     }
 }
