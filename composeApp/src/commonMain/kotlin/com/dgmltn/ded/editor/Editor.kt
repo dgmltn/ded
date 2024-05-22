@@ -12,7 +12,7 @@ interface Editor {
      * Selection is a range of characters that are selected.
      * If selection is null, nothing is selected.
      */
-    var selection: IntRange?
+    var selection: IntProgression?
 
     /**
      * [position] can be any number. If it's outside the range 0..length, Editor will
@@ -26,7 +26,8 @@ interface Editor {
     }
 
     fun moveTo(rowCol: RowCol): Int {
-        return moveTo(getPositionOf(rowCol))
+        val pos = getPositionOf(rowCol)
+        return moveTo(pos)
     }
 
     fun moveBy(delta: Int): Int {
@@ -39,11 +40,11 @@ interface Editor {
         return if (nextRow < 0) {
             moveTo(0)
         }
-        else if (nextRow >= lineCount) {
+        else if (nextRow >= rowCount) {
             moveTo(length)
         }
         else {
-            val row = nextRow.coerceIn(0, lineCount - 1)
+            val row = nextRow.coerceIn(0, rowCount - 1)
             val rowRange = getRangeOfRow(row)
             val rowCount = rowRange.count()
             val position = rowRange.first + (rowCol.col + rowColDelta.col).coerceIn(0, rowCount - 1)
@@ -51,7 +52,7 @@ interface Editor {
         }
     }
 
-    fun select(range: IntRange) {
+    fun select(range: IntProgression) {
         selection = range
     }
 
@@ -82,7 +83,7 @@ interface Editor {
 
     // Reading
     val value: String
-    val lineCount: Int
+    val rowCount: Int
     val length: Int
 
     fun getCharAt(position: Int): Char
@@ -97,8 +98,13 @@ interface Editor {
     fun getRangeOfRow(row: Int): IntRange
 
     fun getPositionOf(rowCol: RowCol): Int {
-        val line = getRangeOfRow(rowCol.row)
-        return line.first + rowCol.col.coerceIn(0 until line.count())
+        val lastRow = rowCount - 1
+        val coercedRow = rowCol.row.coerceIn(0, lastRow)
+        val rowRange = getRangeOfRow(coercedRow)
+        return when(coercedRow) {
+            lastRow -> rowRange.first + rowCol.col.coerceIn(0 until rowRange.count() + 1)
+            else -> rowRange.first + rowCol.col.coerceIn(0 until rowRange.count())
+        }
     }
 
     fun getRowColOf(position: Int): RowCol

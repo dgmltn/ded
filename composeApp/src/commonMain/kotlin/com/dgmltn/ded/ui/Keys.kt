@@ -7,6 +7,7 @@ import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.key.isMetaPressed
 import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
+import com.dgmltn.ded.editor.RowCol
 
 
 data class ModifiedKey(
@@ -35,10 +36,14 @@ fun Key.modified(
 
 val keys: Map<ModifiedKey, DedState.() -> Boolean> = mapOf(
     // Movement
-    Key.DirectionLeft.modified() to { moveBack() },
-    Key.DirectionRight.modified() to { moveFwd() },
-    Key.DirectionDown.modified() to { moveNextRow() },
-    Key.DirectionUp.modified() to { movePrevRow() },
+    Key.DirectionLeft.modified() to { moveBy(-1) },
+    Key.DirectionRight.modified() to { moveBy(1) },
+    Key.DirectionDown.modified() to { moveBy(RowCol(1, 0)) },
+    Key.DirectionUp.modified() to { moveBy(RowCol(-1, 0)) },
+    Key.DirectionLeft.modified(shift = true) to { moveByWithSelection(-1) },
+    Key.DirectionRight.modified(shift = true) to { moveByWithSelection(1) },
+    Key.DirectionDown.modified(shift = true) to { moveByWithSelection(RowCol(1, 0)) },
+    Key.DirectionUp.modified(shift = true) to { moveByWithSelection(RowCol(-1, 0)) },
 
     // Spacing/newlines
     Key.Spacebar.modified() to { insert(" ") },

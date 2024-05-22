@@ -108,22 +108,42 @@ internal class EditorTest {
             cursor shouldEqual 4
             moveTo(-5)
             cursor shouldEqual 0
+
+        }
+    }
+
+    @Test
+    fun getPositionOf() {
+        editor.run {
+            insert("hello\nworld\nline3\nline4")
+            getPositionOf(RowCol(1, 2)) shouldEqual 8
+            getPositionOf(RowCol(2, 3)) shouldEqual 15
+            getPositionOf(RowCol(3, 4)) shouldEqual 22
+
+            // Beyond the end of a row, should position to the last character in the row
+            getPositionOf(RowCol(0, 100)) shouldEqual 5
+
+            // Special case: beyond the last row, should move to the last character
+            getPositionOf(RowCol(100, 0)) shouldEqual 18
+
+            // Special case: beyond the last row, and beyond the end of the line, move to END
+            getPositionOf(RowCol(100, 100)) shouldEqual 23
         }
     }
 
     @Test
     fun lineCount() {
         editor.run {
-            lineCount shouldEqual 0
+            rowCount shouldEqual 0
             insert("hello world")
             value shouldEqual "hello world"
-            lineCount shouldEqual 1
+            rowCount shouldEqual 1
             insert("\n")
-            lineCount shouldEqual 1
+            rowCount shouldEqual 1
             insert("line #2")
-            lineCount shouldEqual 2
+            rowCount shouldEqual 2
             insert("\nline #3\n")
-            lineCount shouldEqual 3
+            rowCount shouldEqual 3
         }
     }
 
@@ -149,7 +169,7 @@ internal class EditorTest {
         editor.run {
             insert("hello\nworld\nline3\nline4")
             value shouldEqual "hello\nworld\nline3\nline4"
-            lineCount shouldEqual 4
+            rowCount shouldEqual 4
             getRangeOfRow(0) shouldEqual 0..5
             getRangeOfRow(1) shouldEqual 6..11
             getRangeOfRow(3) shouldEqual 18..22

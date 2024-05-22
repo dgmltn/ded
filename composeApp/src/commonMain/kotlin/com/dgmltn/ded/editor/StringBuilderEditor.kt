@@ -1,16 +1,16 @@
 package com.dgmltn.ded.editor
 
-import co.touchlab.kermit.Logger
+import com.dgmltn.ded.toIntRange
 
 class StringBuilderEditor: Editor {
     override var cursor = 0
 
-    override var selection: IntRange? = null
+    override var selection: IntProgression? = null
 
     override val value: String
         get() = builder.toString()
 
-    override val lineCount: Int
+    override val rowCount: Int
         get() = if (length == 0) 0 else builder.count { it == '\n' } + if (builder.last() == '\n') 0 else 1
 
     override val length: Int
@@ -22,7 +22,7 @@ class StringBuilderEditor: Editor {
 
     override fun insert(value: String): Boolean {
         val edit = selection
-            ?.let { Edit.Replace(it.first, getSubstring(it), value) }
+            ?.let { Edit.Replace(it.first, getSubstring(it.toIntRange()), value) }
             ?: Edit.Insert(cursor, value)
         selection = null
         edits.add(edit)

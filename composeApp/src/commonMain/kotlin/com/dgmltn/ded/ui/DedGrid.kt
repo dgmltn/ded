@@ -26,7 +26,7 @@ fun DedGrid(
 ) {
     val textMeasurer = rememberTextMeasurer()
 
-    LaunchedEffect(GLYPH, textStyle) {
+    LaunchedEffect(GLYPH, textStyle, state.windowSizePx) {
         state.cellSizePx = textMeasurer.measure(GLYPH, textStyle).size
     }
 

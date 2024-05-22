@@ -27,9 +27,12 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import co.touchlab.kermit.Logger
+import com.dgmltn.ded.div
 import com.dgmltn.ded.editor.RowCol
 import com.dgmltn.ded.editor.StringBuilderEditor
 import com.dgmltn.ded.editor.language.JavascriptLanguageConfig
+import com.dgmltn.ded.editor.toRowCol
+import com.dgmltn.ded.toInt
 
 @Composable
 fun Ded(
@@ -37,7 +40,6 @@ fun Ded(
     colors: DedColors = LocalDefaults.current.editor
 ) {
     val focusRequester = remember { FocusRequester() }
-    var statusText by remember { mutableStateOf("") }
 
     val dedState = rememberDedState(
         editor = StringBuilderEditor(),
@@ -98,35 +100,15 @@ fun Modifier.detectSelectGestures(
         }
     }
     .pointerInput(Unit) {
-        var selectionStartCursorPos: Int? = null
         detectDragGestures(
             onDragStart = { offset ->
-                val col = (offset.x / dedState.cellSizePx.width).toInt() - dedState.cellOffset.x
-                val row = ((offset.y / dedState.cellSizePx.height).toInt() - dedState.cellOffset.y)
-                        .coerceIn(0, dedState.lineCount - 1)
-                dedState.moveTo(RowCol(row, col))
-                selectionStartCursorPos = dedState.cursorPos
-                dedState.select(selectionStartCursorPos!!..dedState.cursorPos)
+                val cellOffset = offset.div(dedState.cellSizePx).toInt() - dedState.cellOffset
+                dedState.moveTo(cellOffset.toRowCol())
             },
-            onDrag = { change, dragAmount ->
-                val col =
-                    (change.position.x / dedState.cellSizePx.width).toInt() - dedState.cellOffset.x
-                val row = ((change.position.y / dedState.cellSizePx.height).toInt() - dedState.cellOffset.y)
-                        .coerceIn(0, dedState.lineCount - 1)
-                dedState.moveTo(RowCol(row, col))
-                dedState.select(
-                    if (selectionStartCursorPos!! < dedState.cursorPos)
-                        selectionStartCursorPos!!..dedState.cursorPos
-                    else
-                        dedState.cursorPos..selectionStartCursorPos!!
-                )
+            onDrag = { change, _ ->
+                val cellOffset = change.position.div(dedState.cellSizePx).toInt() - dedState.cellOffset
+                dedState.moveToWithSelection(cellOffset.toRowCol())
                 change.consume()
             },
-            onDragEnd = {
-                selectionStartCursorPos = null
-            },
-            onDragCancel = {
-                selectionStartCursorPos = null
-            }
         )
     }

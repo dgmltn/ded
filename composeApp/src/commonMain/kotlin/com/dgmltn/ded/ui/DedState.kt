@@ -32,37 +32,43 @@ class DedState(
     var cursorPos by mutableStateOf(editor.cursor)
     var selection by mutableStateOf(editor.selection)
     var length by mutableStateOf(editor.length)
-    var lineCount by mutableStateOf(editor.lineCount)
+    var lineCount by mutableStateOf(editor.rowCount)
     var cellOffset by mutableStateOf(IntOffset.Zero)
 
     var windowSizePx by mutableStateOf(IntSize.Zero)
     var windowOffsetPx by mutableStateOf(IntOffset.Zero)
     var cellSizePx by mutableStateOf(IntSize.Zero)
 
-    fun moveNextRow(): Boolean {
-        if (cursorPos == length) return false
-        editor.moveBy(RowCol(1, 0))
+    fun moveBy(rowCol: RowCol): Boolean {
+        editor.moveBy(rowCol)
         syncWithEditor()
         return true
     }
 
-    fun movePrevRow(): Boolean {
-        if (cursorPos == 0) return false
-        editor.moveBy(RowCol(-1, 0))
+    fun moveBy(delta: Int): Boolean {
+        editor.moveBy(delta)
         syncWithEditor()
         return true
     }
 
-    fun moveFwd(): Boolean {
-        if (cursorPos == length) return false
-        editor.moveBy(1)
+    fun moveByWithSelection(rowCol: RowCol): Boolean {
+        val from = selection?.first ?: editor.cursor
+        editor.moveBy(rowCol)
+        editor.select(when {
+            from <= editor.cursor -> from..editor.cursor
+            else -> from downTo editor.cursor
+        })
         syncWithEditor()
         return true
     }
 
-    fun moveBack(): Boolean {
-        if (cursorPos == 0) return false
-        editor.moveBy(-1)
+    fun moveByWithSelection(delta: Int): Boolean {
+        val from = selection?.first ?: editor.cursor
+        editor.moveBy(delta)
+        editor.select(when {
+            from <= editor.cursor -> from..editor.cursor
+            else -> from downTo editor.cursor
+        })
         syncWithEditor()
         return true
     }
@@ -79,7 +85,18 @@ class DedState(
         return cursorPos
     }
 
-    fun select(range: IntRange) {
+    fun moveToWithSelection(rowCol: RowCol) {
+        val from = selection?.first
+        editor.moveTo(rowCol)
+        editor.select(when {
+            from == null -> editor.cursor..editor.cursor
+            from <= editor.cursor -> from..editor.cursor
+            else -> from downTo editor.cursor
+        })
+        syncWithEditor()
+    }
+
+    fun select(range: IntProgression) {
         editor.select(range)
         syncWithEditor()
     }
@@ -108,8 +125,8 @@ class DedState(
         cursorPos = editor.cursor
         selection = editor.selection
         length = editor.length
-        lineCount = editor.lineCount
-        cellOffset = cellOffset.copy(x = editor.lineCount.numDigits() + 1)
+        lineCount = editor.rowCount
+        cellOffset = cellOffset.copy(x = editor.rowCount.numDigits() + 1)
     }
 
     companion object {
