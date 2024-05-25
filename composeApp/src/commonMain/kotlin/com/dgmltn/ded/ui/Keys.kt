@@ -40,10 +40,14 @@ val keys: Map<ModifiedKey, DedState.() -> Boolean> = mapOf(
     Key.DirectionRight.modified() to { moveBy(1) },
     Key.DirectionDown.modified() to { moveBy(RowCol(1, 0)) },
     Key.DirectionUp.modified() to { moveBy(RowCol(-1, 0)) },
-    Key.DirectionLeft.modified(shift = true) to { moveByWithSelection(-1) },
-    Key.DirectionRight.modified(shift = true) to { moveByWithSelection(1) },
-    Key.DirectionDown.modified(shift = true) to { moveByWithSelection(RowCol(1, 0)) },
-    Key.DirectionUp.modified(shift = true) to { moveByWithSelection(RowCol(-1, 0)) },
+    Key.DirectionLeft.modified(shift = true) to { withSelection { moveBy(-1) } },
+    Key.DirectionRight.modified(shift = true) to { withSelection { moveBy(1) } },
+    Key.DirectionDown.modified(shift = true) to { withSelection { moveBy(RowCol(1, 0)) } },
+    Key.DirectionUp.modified(shift = true) to { withSelection { moveBy(RowCol(-1, 0)) } },
+    Key.DirectionRight.modified(meta = true) to { moveToEndOfLine() },
+    Key.DirectionLeft.modified(meta = true) to { moveToBeginningOfLine() },
+    Key.DirectionRight.modified(meta = true, shift = true) to { withSelection { moveToEndOfLine() } },
+    Key.DirectionLeft.modified(meta = true, shift = true) to { withSelection { moveToBeginningOfLine() } },
 
     // Spacing/newlines
     Key.Spacebar.modified() to { insert(" ") },

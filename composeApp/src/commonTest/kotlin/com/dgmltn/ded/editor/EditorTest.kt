@@ -132,6 +132,18 @@ internal class EditorTest {
     }
 
     @Test
+    fun getSubstring() {
+        editor.run {
+            insert("hello\nworld\nline3\nline4")
+            getSubstring(0..4) shouldEqual "hello"
+            getSubstring(6..10) shouldEqual "world"
+            getSubstring(12..16) shouldEqual "line3"
+            getSubstring(18..22) shouldEqual "line4"
+            getSubstring(18 .. 25) shouldEqual "line4"
+        }
+    }
+
+    @Test
     fun lineCount() {
         editor.run {
             rowCount shouldEqual 0
@@ -149,19 +161,21 @@ internal class EditorTest {
 
     @Test
     fun lines() {
-        editor.insert("hello world")
-        editor.value shouldEqual "hello world"
+        editor.run {
+            insert("hello world")
+            value shouldEqual "hello world"
 
-        editor.getRangeOfAllRows()[0] shouldEqual 0 .. 10
+            getRangeOfAllRows()[0] shouldEqual 0 .. 10
 
-        editor.insert("\n")
-        editor.insert("line #2")
-        editor.insert("\nline #3\n")
+            insert("\n")
+            insert("line #2")
+            insert("\nline #3\n")
 
-        val lines = editor.getRangeOfAllRows()
-        lines[0] shouldEqual 0 .. 11
-        lines[1] shouldEqual 12 .. 19
-        lines[2] shouldEqual 20 .. 27
+            val lines = getRangeOfAllRows()
+            lines[0] shouldEqual 0 .. 11
+            lines[1] shouldEqual 12 .. 19
+            lines[2] shouldEqual 20 .. 27
+        }
     }
 
     @Test
@@ -225,6 +239,23 @@ internal class EditorTest {
             delete(3) shouldEqual 3
             value shouldEqual ""
             delete(5) shouldEqual 0
+        }
+    }
+
+    @Test
+    fun backspace() {
+        editor.run {
+            cursor shouldEqual 0
+            backspace(1) shouldEqual 0
+            insert("hello")
+            cursor shouldEqual 5
+            backspace(1) shouldEqual 1
+            value shouldEqual "hell"
+            backspace(1) shouldEqual 1
+            value shouldEqual "hel"
+            backspace(3) shouldEqual 3
+            value shouldEqual ""
+            backspace(5) shouldEqual 0
         }
     }
 

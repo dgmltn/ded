@@ -41,6 +41,17 @@ class StringBuilderEditor: Editor {
         return adjusted
     }
 
+    override fun backspace(count: Int): Int {
+        val adjusted = count.coerceAtMost(cursor)
+        if (adjusted <= 0) return 0
+
+        val value = getSubstring(cursor - count, cursor)
+        val edit = Edit.Delete(cursor - count, value)
+        edits.add(edit)
+        perform(edit)
+        return adjusted
+    }
+
     override fun replace(count: Int, value: String): Int {
         val maxDeletableCount = length - cursor
         val adjusted = count.coerceIn(0, maxDeletableCount)
@@ -72,8 +83,11 @@ class StringBuilderEditor: Editor {
 
     override fun getCharAt(position: Int) = builder[position]
 
-    override fun getSubstring(startPosition: Int, endPosition: Int): String =
-        builder.substring(startPosition, endPosition)
+    override fun getSubstring(startPosition: Int, endPosition: Int): String {
+        val start = startPosition.coerceIn(0, length)
+        val end = endPosition.coerceIn(0, length)
+        return builder.substring(start, end)
+    }
 
     override fun getRangeOfAllRows(): List<IntRange> {
         var startIndex = 0

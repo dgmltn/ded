@@ -68,6 +68,11 @@ interface Editor {
     fun delete(count: Int): Int
 
     /**
+     * Returns the number of characters that were actually backspaced
+     */
+    fun backspace(count: Int): Int
+
+    /**
      * Returns the number of characters that were actually replaced.
      * Will replace up to [count] characters with the new value.
      */
@@ -88,8 +93,18 @@ interface Editor {
 
     fun getCharAt(position: Int): Char
 
+    /**
+     * Returns a new String that contains characters in this Editor
+     * at startPosition (inclusive) and up to the endPosition (exclusive).
+     *
+     * If endPosition is greater than length, it will be coerced to length.
+     */
     fun getSubstring(startPosition: Int, endPosition: Int): String
 
+    /**
+     * Returns a new String that contains characters in this Editor
+     * at the range of [range].
+     */
     fun getSubstring(range: IntRange) =
         getSubstring(range.first, range.last + 1)
 

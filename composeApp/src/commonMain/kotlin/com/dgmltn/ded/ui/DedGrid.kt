@@ -3,6 +3,7 @@ package com.dgmltn.ded.ui
 import DedColors
 import LocalDefaults
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -13,7 +14,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
+import co.touchlab.kermit.Logger
 
 private const val GLYPH = "W"
 
@@ -28,6 +29,13 @@ fun DedGrid(
 
     LaunchedEffect(GLYPH, textStyle, state.windowSizePx) {
         state.cellSizePx = textMeasurer.measure(GLYPH, textStyle).size
+    }
+
+    LaunchedEffect(state.windowSizePx, state.cellSizePx, state.rowCount) {
+        state.maxWindowYScrollPx = (state.rowCount * state.cellSizePx.height - state.windowSizePx.height).coerceAtLeast(0)
+        if (state.windowYScrollPx > state.maxWindowYScrollPx) {
+            state.windowYScrollPx = state.maxWindowYScrollPx.toFloat()
+        }
     }
 
     val scope = remember {
@@ -45,7 +53,8 @@ fun DedGrid(
 
     Box(
         modifier = modifier
-            .onSizeChanged { state.windowSizePx = it },
+            .onSizeChanged { state.windowSizePx = it }
+            .offset { IntOffset(0, -state.windowYScrollPx.toInt()) }, // TODO: don't just offset the entire window
     ) {
         CompositionLocalProvider(
             LocalTextStyle provides textStyle,
