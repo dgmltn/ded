@@ -103,6 +103,7 @@ interface DedScope {
     fun AllVisibleGlyphs(
         length: Int,
         getCharAt: (Int) -> Char,
+        colorizer: (Int) -> Color?,
         cursorPos: Int,
         selection: IntProgression?,
     ) {
@@ -131,7 +132,7 @@ interface DedScope {
                 BodyGlyph(row, col, c, colors.selectionFg, colors.selectionBg)
             }
             else {
-                BodyGlyph(row, col, c, colors.text, null)
+                BodyGlyph(row, col, c, colorizer(i) ?: colors.text, null)
             }
 
 

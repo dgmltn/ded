@@ -1,5 +1,7 @@
 package com.dgmltn.ded.ui
 
+import androidx.compose.foundation.MutatePriority
+import androidx.compose.foundation.MutatorMutex
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -8,14 +10,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import co.touchlab.kermit.Logger
 import com.dgmltn.ded.editor.Editor
 import com.dgmltn.ded.editor.RowCol
 import com.dgmltn.ded.editor.StringBuilderEditor
 import com.dgmltn.ded.editor.language.JavascriptLanguageConfig
 import com.dgmltn.ded.editor.language.LanguageConfig
 import com.dgmltn.ded.numDigits
+import dev.snipme.highlights.Highlights
+import dev.snipme.highlights.model.CodeHighlight
+import dev.snipme.highlights.model.ColorHighlight
+import dev.snipme.highlights.model.SyntaxLanguage
+import dev.snipme.highlights.model.SyntaxThemes
 
 @Composable
 fun rememberDedState(
@@ -31,6 +41,7 @@ class DedState(
     private val editor: Editor = StringBuilderEditor(),
     val languageConfig: LanguageConfig = JavascriptLanguageConfig()
 ) {
+    var fullText by mutableStateOf(editor.value)
     var cursorPos by mutableStateOf(editor.cursor)
     var selection by mutableStateOf(editor.selection)
     var length by mutableStateOf(editor.length)
@@ -43,6 +54,8 @@ class DedState(
     var maxWindowYScrollPx by mutableIntStateOf(0)
     var windowYScrollPx by mutableFloatStateOf(0f)
     var cellSizePx by mutableStateOf(IntSize.Zero)
+
+    var highlights by mutableStateOf(emptyList<CodeHighlight>())
 
     fun moveBy(rowCol: RowCol) = (editor.moveBy(rowCol) > -1).also { syncWithEditor() }
 
@@ -72,7 +85,22 @@ class DedState(
 
     fun redo() = editor.redo().also { syncWithEditor() }
 
+    val colorCache = mutableMapOf<Int, Color>()
+    fun getColorOf(position: Int): Color? =
+        highlights
+            .filterIsInstance<ColorHighlight>()
+            .firstOrNull { position >= it.location.start && position < it.location.end }
+            ?.rgb
+            ?.let { rgb ->
+                if (colorCache.contains(rgb))
+                    colorCache[rgb]!!
+                else
+                    Color(rgb).copy(alpha = 1f)
+                        .also { colorCache[rgb] = it }
+            }
+
     private fun syncWithEditor() {
+        fullText = editor.value
         cursorPos = editor.cursor
         selection = editor.selection
         length = editor.length
@@ -94,9 +122,38 @@ class DedState(
         else if (maxVisibleRow * cellSizePx.height > windowYScrollPx + windowSizePx.height) {
             windowYScrollPx = (maxVisibleRow * cellSizePx.height - windowSizePx.height).toFloat()
         }
-
-
     }
+
+
+    private val highlighter = Highlights.Builder()
+        .theme(SyntaxThemes.monokai(darkMode = true))
+        .language(SyntaxLanguage.JAVASCRIPT)
+        .build()
+
+    private val highlightsMutex = MutatorMutex()
+
+    private val isBuildingHighlights = mutableStateOf(false)
+
+    suspend fun buildHighlights() {
+        highlightsMutex.mutateWith(highlighter, MutatePriority.Default) {
+            isBuildingHighlights.value = true
+            try {
+                highlights = highlighter
+                    .getBuilder()
+                    .code(editor.value)
+                    .build()
+                    .getHighlights()
+//                highlighter.setCode(editor.value)
+//                highlights = getHighlights()
+                Logger.e { "Highlights: $highlights" }
+            } finally {
+                isBuildingHighlights.value = false
+            }
+        }
+    }
+
+    val isScrollInProgress: Boolean
+        get() = isBuildingHighlights.value
 
     /**
      * Returns the position of the first non-whitespace character on the

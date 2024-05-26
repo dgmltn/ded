@@ -1,5 +1,6 @@
 package com.dgmltn.ded.editor
 
+import co.touchlab.kermit.Logger
 import com.dgmltn.ded.toIntRange
 
 class StringBuilderEditor: Editor {

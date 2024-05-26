@@ -145,5 +145,26 @@ val keys: Map<ModifiedKey, DedState.() -> Boolean> = mapOf(
     Key.Nine.modified() to { insert("9") },
     Key.Nine.modified(shift = true) to { insert("(") },
     Key.Zero.modified() to { insert("0") },
-    Key.Zero.modified(shift = true) to { insert(")") }
+    Key.Zero.modified(shift = true) to { insert(")") },
+
+    // Punctuation
+    Key.Comma.modified() to { insert(",") },
+    Key.Period.modified() to { insert(".") },
+    Key.Slash.modified() to { insert("/") },
+    Key.Backslash.modified() to { insert("\\") },
+    Key.Semicolon.modified() to { insert(";") },
+    Key.Apostrophe.modified() to { insert("'") },
+    Key.Apostrophe.modified(shift = true) to { insert("\"") },
+    Key.Plus.modified() to { insert("+") },
+    Key.Equals.modified(shift = true) to { insert("+") },
+    Key.Minus.modified() to { insert("-") },
+    Key.Minus.modified(shift = true) to { insert("_") },
+    Key.Multiply.modified() to { insert("*") },
+    Key.Equals.modified() to { insert("=") },
+    Key.Pound.modified() to { insert("#") },
+
+    // Clipboard
+    Key.Cut.modified() to { insert("!!cut!!") },
+    Key.X.modified(meta = true) to { insert("!!cut!!") },
+    //TODO
 )

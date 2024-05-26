@@ -5,18 +5,18 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
+    alias(libs.plugins.compose.compiler)
 }
 
 kotlin {
-    androidTarget {
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = "11"
-            }
+
+    androidTarget()
+    
+    jvm("desktop") {
+        mainRun {
+            mainClass.set("MainKt")
         }
     }
-    
-    jvm("desktop")
     
     listOf(
         iosX64(),
@@ -44,6 +44,7 @@ kotlin {
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
             implementation(libs.kermit)
+            implementation(libs.highlights)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
