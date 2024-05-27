@@ -7,11 +7,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import co.touchlab.kermit.Logger
@@ -21,6 +24,7 @@ import com.dgmltn.ded.editor.StringBuilderEditor
 import com.dgmltn.ded.editor.language.JavascriptLanguageConfig
 import com.dgmltn.ded.editor.language.LanguageConfig
 import com.dgmltn.ded.numDigits
+import com.dgmltn.ded.toIntRange
 import dev.snipme.highlights.Highlights
 import dev.snipme.highlights.model.CodeHighlight
 import dev.snipme.highlights.model.ColorHighlight
@@ -30,16 +34,18 @@ import dev.snipme.highlights.model.SyntaxThemes
 @Composable
 fun rememberDedState(
     editor: Editor = StringBuilderEditor(),
-    languageConfig: LanguageConfig = JavascriptLanguageConfig()
+    languageConfig: LanguageConfig = JavascriptLanguageConfig(),
+    clipboardManager: ClipboardManager = LocalClipboardManager.current,
 ): DedState {
-    return rememberSaveable(saver = DedState.Saver) {
-        DedState(editor, languageConfig)
+    return remember {
+        DedState(clipboardManager, editor, languageConfig)
     }
 }
 
 class DedState(
+    private val clipboardManager: ClipboardManager,
     private val editor: Editor = StringBuilderEditor(),
-    val languageConfig: LanguageConfig = JavascriptLanguageConfig()
+    private val languageConfig: LanguageConfig = JavascriptLanguageConfig(),
 ) {
     var fullText by mutableStateOf(editor.value)
     var cursorPos by mutableStateOf(editor.cursor)
@@ -77,6 +83,13 @@ class DedState(
 
     fun insert(value: String) = editor.insert(value).also { syncWithEditor() }
 
+    fun tab(): Boolean {
+        val tabSize = languageConfig.tabSize
+        val col = getRowColOfCursor().col
+        val numOfSpaces = tabSize - (col % tabSize)
+        return insert(" ".repeat(numOfSpaces))
+    }
+
     fun delete(count: Int) = editor.delete(count).also { syncWithEditor() }
 
     fun backspace() = (editor.backspace(1) == 1).also { syncWithEditor() }
@@ -85,7 +98,28 @@ class DedState(
 
     fun redo() = editor.redo().also { syncWithEditor() }
 
-    val colorCache = mutableMapOf<Int, Color>()
+    fun cut(): Boolean {
+        copy()
+        return insert("")
+    }
+
+    fun copy(): Boolean {
+        val localSelection = selection
+            ?.toIntRange()
+            ?: editor.getRangeOfRow(editor.getRowColOfCursor().row)
+                .also {
+                    editor.select(it)
+                    syncWithEditor()
+                }
+
+        val text = editor.getSubstring(localSelection)
+        clipboardManager.setText(AnnotatedString(text))
+        return true
+    }
+
+    fun paste() = insert(clipboardManager.getText().toString())
+
+    private val colorCache = mutableMapOf<Int, Color>()
     fun getColorOf(position: Int): Color? =
         highlights
             .filterIsInstance<ColorHighlight>()
@@ -193,19 +227,5 @@ class DedState(
         })
         syncWithEditor()
         return true
-    }
-
-    companion object {
-        /**
-         * The default [Saver] implementation for [DedState].
-         */
-        val Saver: Saver<DedState, *> = Saver(
-            save = {
-                   null
-            },
-            restore = {
-                DedState()
-            }
-        )
     }
 }

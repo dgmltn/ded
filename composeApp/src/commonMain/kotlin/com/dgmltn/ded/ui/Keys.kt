@@ -51,12 +51,7 @@ val keys: Map<ModifiedKey, DedState.() -> Boolean> = mapOf(
 
     // Spacing/newlines
     Key.Spacebar.modified() to { insert(" ") },
-    Key.Tab.modified() to {
-        val tabSize = languageConfig.tabSize
-        val col = getRowColOfCursor().col
-        val numOfSpaces = tabSize - (col % tabSize)
-        insert(" ".repeat(numOfSpaces))
-    },
+    Key.Tab.modified() to { tab() },
     Key.Enter.modified() to { insert("\n") },
     Key.Backspace.modified() to { backspace() },
     Key.Delete.modified() to { delete(1) == 1 },
@@ -164,7 +159,12 @@ val keys: Map<ModifiedKey, DedState.() -> Boolean> = mapOf(
     Key.Pound.modified() to { insert("#") },
 
     // Clipboard
-    Key.Cut.modified() to { insert("!!cut!!") },
-    Key.X.modified(meta = true) to { insert("!!cut!!") },
+    Key.Cut.modified() to { cut() },
+    Key.X.modified(meta = true) to { cut() },
+    Key.Copy.modified() to { copy() },
+    Key.C.modified(meta = true) to { copy() },
+    Key.Paste.modified() to { paste() },
+    Key.V.modified(meta = true) to { paste() },
+
     //TODO
 )

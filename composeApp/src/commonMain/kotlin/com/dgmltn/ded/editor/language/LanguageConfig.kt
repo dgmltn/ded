@@ -6,5 +6,9 @@ interface LanguageConfig {
 }
 
 class JavascriptLanguageConfig : LanguageConfig {
+    override val tabSize = 2
+}
+
+class KotlinLanguageConfig : LanguageConfig {
     override val tabSize = 4
 }

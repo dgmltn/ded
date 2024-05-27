@@ -26,6 +26,8 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.ClipboardManager
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.unit.dp
 import co.touchlab.kermit.Logger
 import com.dgmltn.ded.div
@@ -42,10 +44,7 @@ fun Ded(
 ) {
     val focusRequester = remember { FocusRequester() }
 
-    val dedState = rememberDedState(
-        editor = StringBuilderEditor(),
-        languageConfig = JavascriptLanguageConfig()
-    )
+    val dedState = rememberDedState()
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -97,7 +96,6 @@ fun Ded(
 @Composable
 fun Modifier.dedKeyEvent(dedState: DedState) = then(
     onKeyEvent {
-        Logger.e("DOUG: $it")
         (it.type == KeyEventType.KeyDown)
                 && keys[ModifiedKey(it)]?.invoke(dedState) ?: false
     }
