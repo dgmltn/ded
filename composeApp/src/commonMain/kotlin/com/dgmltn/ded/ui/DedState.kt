@@ -1,5 +1,6 @@
 package com.dgmltn.ded.ui
 
+import DedTheme
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.MutatorMutex
 import androidx.compose.runtime.Composable
@@ -8,13 +9,12 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.Saver
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.input.TextInputSession
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import co.touchlab.kermit.Logger
@@ -23,27 +23,29 @@ import com.dgmltn.ded.editor.RowCol
 import com.dgmltn.ded.editor.StringBuilderEditor
 import com.dgmltn.ded.editor.language.JavascriptLanguageConfig
 import com.dgmltn.ded.editor.language.LanguageConfig
-import com.dgmltn.ded.numDigits
 import com.dgmltn.ded.toIntRange
 import dev.snipme.highlights.Highlights
 import dev.snipme.highlights.model.CodeHighlight
 import dev.snipme.highlights.model.ColorHighlight
 import dev.snipme.highlights.model.SyntaxLanguage
+import dev.snipme.highlights.model.SyntaxTheme
 import dev.snipme.highlights.model.SyntaxThemes
 
 @Composable
 fun rememberDedState(
     editor: Editor = StringBuilderEditor(),
+    theme: SyntaxTheme = SyntaxThemes.monokai(darkMode = DedTheme.colors.isDarkTheme),
     languageConfig: LanguageConfig = JavascriptLanguageConfig(),
     clipboardManager: ClipboardManager = LocalClipboardManager.current,
 ): DedState {
     return remember {
-        DedState(clipboardManager, editor, languageConfig)
+        DedState(clipboardManager, theme, editor, languageConfig)
     }
 }
 
 class DedState(
     private val clipboardManager: ClipboardManager,
+    private val theme: SyntaxTheme = SyntaxThemes.monokai(darkMode = true),
     private val editor: Editor = StringBuilderEditor(),
     private val languageConfig: LanguageConfig = JavascriptLanguageConfig(),
 ) {
@@ -62,6 +64,8 @@ class DedState(
     var cellSizePx by mutableStateOf(IntSize.Zero)
 
     var highlights by mutableStateOf(emptyList<CodeHighlight>())
+
+    var inputSession: TextInputSession? = null
 
     fun moveBy(rowCol: RowCol) = (editor.moveBy(rowCol) > -1).also { syncWithEditor() }
 
@@ -139,7 +143,7 @@ class DedState(
         selection = editor.selection
         length = editor.length
         rowCount = editor.rowCount
-        cellOffset = cellOffset.copy(x = editor.rowCount.numDigits() + 1)
+        cellOffset = cellOffset.copy(x = "${editor.getRowColOf(length).row + 1} ".length)
 
         // In case rowCount changed
         maxWindowYScrollPx = (rowCount * cellSizePx.height - windowSizePx.height).coerceAtLeast(0)
@@ -160,7 +164,7 @@ class DedState(
 
 
     private val highlighter = Highlights.Builder()
-        .theme(SyntaxThemes.monokai(darkMode = true))
+        .theme(theme)
         .language(SyntaxLanguage.JAVASCRIPT)
         .build()
 

@@ -294,6 +294,19 @@ internal class EditorTest {
     }
 
     @Test
+    fun empty_value() {
+        editor.run {
+            value shouldEqual ""
+            insert("test")
+            value shouldEqual "test"
+            undo()
+            value shouldEqual ""
+            undo()
+            value shouldEqual ""
+        }
+    }
+
+    @Test
     fun selection() {
         editor.run {
             insert("hello world")

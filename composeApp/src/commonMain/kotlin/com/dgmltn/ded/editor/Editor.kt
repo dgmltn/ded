@@ -113,7 +113,7 @@ interface Editor {
     fun getRangeOfRow(row: Int): IntRange
 
     fun getPositionOf(rowCol: RowCol): Int {
-        val lastRow = rowCount - 1
+        val lastRow = getLastRow()
         val coercedRow = rowCol.row.coerceIn(0, lastRow)
         val rowRange = getRangeOfRow(coercedRow)
         return when(coercedRow) {
@@ -121,6 +121,8 @@ interface Editor {
             else -> rowRange.first + rowCol.col.coerceIn(0 until rowRange.count())
         }
     }
+
+    fun getLastRow() = (rowCount - 1).coerceAtLeast(0)
 
     fun getRowColOf(position: Int): RowCol
 

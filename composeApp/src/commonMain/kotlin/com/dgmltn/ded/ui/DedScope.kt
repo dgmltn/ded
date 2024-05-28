@@ -14,8 +14,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 
-private val END = Char(0)
-private const val NEWLINE = '\n'
+val END = Char(0)
+const val NEWLINE = '\n'
 
 interface DedScope {
     val cellSize: IntSize
