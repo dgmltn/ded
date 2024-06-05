@@ -4,6 +4,8 @@ import com.dgmltn.ded.App
 
 fun main() = application {
     Window(onCloseRequest = ::exitApplication, title = "ded") {
-        App()
+        DedTheme {
+            App()
+        }
     }
 }

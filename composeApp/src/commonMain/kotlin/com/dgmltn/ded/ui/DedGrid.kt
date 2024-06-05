@@ -53,7 +53,10 @@ fun DedGrid(
 
     Box(
         modifier = modifier
-            .onSizeChanged { state.windowSizePx = it }
+            .onSizeChanged {
+                state.windowSizePx = it
+                Logger.e { "windowSizePx: $it" }
+            }
             .offset { IntOffset(0, -state.windowYScrollPx.toInt()) }, // TODO: don't just offset the entire window
     ) {
         CompositionLocalProvider(

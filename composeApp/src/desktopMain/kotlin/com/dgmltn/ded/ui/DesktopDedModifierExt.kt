@@ -1,0 +1,72 @@
+package com.dgmltn.ded.ui
+
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
+import com.dgmltn.ded.div
+import com.dgmltn.ded.editor.toRowCol
+import com.dgmltn.ded.toInt
+
+@Composable
+actual fun Modifier.dedGestureModifier(
+    dedState: DedState,
+) = this
+    .detectTapGestures(dedState)
+    .detectSelectGestures(dedState)
+    .detectScrollGestures(dedState)
+
+
+@Composable
+private fun Modifier.detectScrollGestures(
+    dedState: DedState,
+) = this
+    .scrollable(
+        orientation = Orientation.Vertical,
+        // Scrollable state: describes how to consume
+        // scrolling delta and update offset
+        state = rememberScrollableState { delta ->
+            val min = 0f
+            val max = dedState.maxWindowYScrollPx.toFloat()
+            val current = dedState.windowYScrollPx
+            val minDelta = min - current
+            val maxDelta = max - current
+            val clipped = (-delta).coerceIn(minDelta, maxDelta)
+            dedState.windowYScrollPx += clipped
+            -clipped
+        }
+    )
+
+@Composable
+private fun Modifier.detectTapGestures(
+    dedState: DedState,
+) = this
+    .pointerInput(Unit) {
+        detectTapGestures { offset ->
+            val cellOffset = offset.div(dedState.cellSizePx).toInt() - dedState.cellOffset
+            dedState.moveTo(cellOffset.toRowCol())
+        }
+    }
+
+@Composable
+private fun Modifier.detectSelectGestures(
+    dedState: DedState,
+) = this
+    .pointerInput(Unit) {
+        detectDragGestures(
+            onDragStart = { offset ->
+                val cellOffset = offset.div(dedState.cellSizePx).toInt() - dedState.cellOffset
+                dedState.moveTo(cellOffset.toRowCol())
+            },
+            onDrag = { change, _ ->
+                val cellOffset =
+                    change.position.div(dedState.cellSizePx).toInt() - dedState.cellOffset
+                dedState.withSelection { dedState.moveTo(cellOffset.toRowCol()) }
+                change.consume()
+            },
+        )
+    }
