@@ -7,10 +7,10 @@ import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import co.touchlab.kermit.Logger
 import com.dgmltn.ded.div
-import com.dgmltn.ded.editor.RowCol
 import com.dgmltn.ded.editor.toRowCol
 import com.dgmltn.ded.toInt
 
@@ -46,12 +46,18 @@ private fun Modifier.detectScrollGestures(
 @Composable
 private fun Modifier.detectTapGestures(
     dedState: DedState,
-) = this
+)= this
     .pointerInput(Unit) {
-        detectTapGestures { offset ->
-            val cellOffset = offset.div(dedState.cellSizePx).toInt() - dedState.cellOffset
-            dedState.moveTo(cellOffset.toRowCol())
-        }
+        detectTapGestures(
+            onLongPress = {
+                //TODO: select the tapped word
+            },
+            onTap = { offset ->
+                dedState.inputSession?.showSoftwareKeyboard()
+                val cellOffset = dedState.getCellAt(offset)
+                dedState.moveTo(cellOffset)
+            }
+        )
     }
 
 @Composable
@@ -61,13 +67,12 @@ private fun Modifier.detectDragGestures(
     .pointerInput(Unit) {
         detectDragGestures(
             onDragStart = { offset ->
-                val cellOffset = offset.div(dedState.cellSizePx).toInt() - dedState.cellOffset
-                dedState.moveTo(cellOffset.toRowCol())
+                val cellOffset = dedState.getCellAt(offset)
+                dedState.moveTo(cellOffset)
             },
             onDrag = { change, _ ->
-                val cellOffset =
-                    change.position.div(dedState.cellSizePx).toInt() - dedState.cellOffset
-                dedState.withSelection { dedState.moveTo(cellOffset.toRowCol()) }
+                val cellOffset = dedState.getCellAt(change.position)
+                dedState.withSelection { dedState.moveTo(cellOffset) }
                 change.consume()
             },
         )

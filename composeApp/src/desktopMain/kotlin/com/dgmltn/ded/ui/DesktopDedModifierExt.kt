@@ -7,7 +7,10 @@ import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import com.dgmltn.ded.div
 import com.dgmltn.ded.editor.toRowCol
 import com.dgmltn.ded.toInt
@@ -47,8 +50,8 @@ private fun Modifier.detectTapGestures(
 ) = this
     .pointerInput(Unit) {
         detectTapGestures { offset ->
-            val cellOffset = offset.div(dedState.cellSizePx).toInt() - dedState.cellOffset
-            dedState.moveTo(cellOffset.toRowCol())
+            val cellOffset = dedState.getCellAt(offset)
+            dedState.moveTo(cellOffset)
         }
     }
 
@@ -59,13 +62,12 @@ private fun Modifier.detectSelectGestures(
     .pointerInput(Unit) {
         detectDragGestures(
             onDragStart = { offset ->
-                val cellOffset = offset.div(dedState.cellSizePx).toInt() - dedState.cellOffset
-                dedState.moveTo(cellOffset.toRowCol())
+                val cellOffset = dedState.getCellAt(offset)
+                dedState.moveTo(cellOffset)
             },
             onDrag = { change, _ ->
-                val cellOffset =
-                    change.position.div(dedState.cellSizePx).toInt() - dedState.cellOffset
-                dedState.withSelection { dedState.moveTo(cellOffset.toRowCol()) }
+                val cellOffset = dedState.getCellAt(change.position)
+                dedState.withSelection { dedState.moveTo(cellOffset) }
                 change.consume()
             },
         )

@@ -146,16 +146,16 @@ internal class EditorTest {
     @Test
     fun lineCount() {
         editor.run {
-            rowCount shouldEqual 0
+            rowCount shouldEqual 1
             insert("hello world")
             value shouldEqual "hello world"
             rowCount shouldEqual 1
             insert("\n")
-            rowCount shouldEqual 1
+            rowCount shouldEqual 2
             insert("line #2")
             rowCount shouldEqual 2
             insert("\nline #3\n")
-            rowCount shouldEqual 3
+            rowCount shouldEqual 4
         }
     }
 
@@ -215,8 +215,12 @@ internal class EditorTest {
             getRangeOfRow(0) shouldEqual 0..4
             insert("\n")
             getRangeOfRow(0) shouldEqual 0..5
+            getRangeOfRow(1) shouldEqual 6..6
             insert("world\nline3")
             getRangeOfRow(1) shouldEqual 6..11
+            getRangeOfRow(2) shouldEqual 12..16
+            insert("\n")
+            getRangeOfRow(3) shouldEqual 18..18
         }
     }
 

@@ -1,6 +1,5 @@
 package com.dgmltn.ded.editor
 
-import co.touchlab.kermit.Logger
 import com.dgmltn.ded.toIntRange
 
 class StringBuilderEditor: Editor {
@@ -12,7 +11,7 @@ class StringBuilderEditor: Editor {
         get() = builder.toString()
 
     override val rowCount: Int
-        get() = if (length == 0) 0 else builder.count { it == '\n' } + if (builder.last() == '\n') 0 else 1
+        get() = builder.count { it == '\n' } + 1
 
     override val length: Int
         get() = builder.length
@@ -106,22 +105,24 @@ class StringBuilderEditor: Editor {
     }
 
     override fun getRangeOfRow(row: Int): IntRange {
-        // Edge case
-        if (row == 0 && builder.isEmpty()) return 0..0
+        require(row in 0..rowCount) { "row $row is out of bounds. Should be in 0..$rowCount" }
 
+        var currentRow = 0
         var startIndex = 0
         var endIndex = builder.indexOf("\n", startIndex)
-        var current = 0
+
         while (endIndex != -1) {
-            if (current == row) return startIndex .. endIndex
-            current++
+            if (currentRow == row) return startIndex .. endIndex
+            currentRow++
             startIndex = endIndex + 1
             endIndex = builder.indexOf("\n", startIndex)
         }
-        if (current == row && startIndex < builder.length && startIndex != endIndex) {
+
+        if (currentRow == row && startIndex < builder.length && startIndex != endIndex) {
             return startIndex ..< builder.length
         }
-        throw IllegalStateException("row $row is out of bounds. Should be between 0 and $current")
+
+        return builder.length .. builder.length
     }
 
     override fun getRowColOf(position: Int): RowCol {

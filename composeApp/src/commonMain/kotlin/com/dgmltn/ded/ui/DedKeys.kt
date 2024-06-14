@@ -28,7 +28,7 @@ fun Modifier.dedKeyEvent(dedState: DedState) = then(
 
         if (it.utf16CodePoint == 0xffff) return@onKeyEvent false
 
-        Logger.e { "ODUG: codePoint: ${it.utf16CodePoint}" }
+        Logger.e { "DOUG: codePoint: ${it.utf16CodePoint}" }
 
         dedState.insert(it.consumeCodePoint())
         true

@@ -10,12 +10,12 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.TextInputSession
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import co.touchlab.kermit.Logger
 import com.dgmltn.ded.editor.Editor
@@ -49,22 +49,35 @@ class DedState(
     private val editor: Editor = StringBuilderEditor(),
     private val languageConfig: LanguageConfig = JavascriptLanguageConfig(),
 ) {
+    // The full text of the editor. This should be optimized but for now it's needed
+    // to build highlights.
     var fullText by mutableStateOf(editor.value)
-    var cursorPos by mutableStateOf(editor.cursor)
-    var selection by mutableStateOf(editor.selection)
-    var length by mutableStateOf(editor.length)
-    var rowCount by mutableStateOf(editor.rowCount)
-    var cellOffset by mutableStateOf(IntOffset.Zero)
 
+    // The current cursor position of the editor
+    var cursorPos by mutableStateOf(editor.cursor)
+
+    // The current selection range of the editor
+    var selection by mutableStateOf(editor.selection)
+
+    // The length of the editor's text
+    var length by mutableStateOf(editor.length)
+
+    // The number of rows in the editor
+    var rowCount by mutableStateOf(editor.rowCount)
+
+    // The number of glyphs that the line number will take up
+    var lineNumberLength by mutableIntStateOf(0)
+
+    // Used to map clicks and pixel positions to cell positions
     var windowSizePx by mutableStateOf(IntSize.Zero)
-    var maxWindowXScrollPx by mutableIntStateOf(0)
-    var windowXScrollPx by mutableFloatStateOf(0f)
+    var cellSizePx by mutableStateOf(IntSize.Zero)
     var maxWindowYScrollPx by mutableIntStateOf(0)
     var windowYScrollPx by mutableFloatStateOf(0f)
-    var cellSizePx by mutableStateOf(IntSize.Zero)
 
-    var highlights by mutableStateOf(emptyList<CodeHighlight>())
+    // Calculated by the highlighter library
+    private var highlights by mutableStateOf(emptyList<CodeHighlight>())
 
+    // Related to the software keyboard
     var inputSession: TextInputSession? = null
 
     fun moveBy(rowCol: RowCol) = (editor.moveBy(rowCol) > -1).also { syncWithEditor() }
@@ -123,6 +136,16 @@ class DedState(
 
     fun paste() = insert(clipboardManager.getText().toString())
 
+    /**
+     * Returns the Cell position of the given pixel offset [offset]. This takes into account
+     * the current window scroll position, cell size, and indentation due to line numbers.
+     */
+    fun getCellAt(offset: Offset) =
+        RowCol(
+            row = ((offset.y + windowYScrollPx) / cellSizePx.height).toInt(),
+            col = (offset.x / cellSizePx.width - lineNumberLength).toInt()
+        )
+
     private val colorCache = mutableMapOf<Int, Color>()
     fun getColorOf(position: Int): Color? =
         highlights
@@ -143,17 +166,18 @@ class DedState(
         selection = editor.selection
         length = editor.length
         rowCount = editor.rowCount
-        cellOffset = cellOffset.copy(x = "${editor.getRowColOf(length).row + 1} ".length)
+        lineNumberLength = "${editor.getRowColOf(length).row + 1} ".length
 
         // In case rowCount changed
         maxWindowYScrollPx = (rowCount * cellSizePx.height - windowSizePx.height).coerceAtLeast(0)
         if (windowYScrollPx > maxWindowYScrollPx) {
             windowYScrollPx = maxWindowYScrollPx.toFloat()
         }
+
         // Make sure cursor is visible
         val cursorRow = editor.getRowColOfCursor().row
         val minVisibleRow = (cursorRow - 1).coerceAtLeast(0)
-        val maxVisibleRow = (cursorRow + 2)
+        val maxVisibleRow = (cursorRow + 1)
         if (minVisibleRow * cellSizePx.height < windowYScrollPx) {
             windowYScrollPx = (minVisibleRow * cellSizePx.height).toFloat()
         }
@@ -189,9 +213,6 @@ class DedState(
             }
         }
     }
-
-    val isScrollInProgress: Boolean
-        get() = isBuildingHighlights.value
 
     /**
      * Returns the position of the first non-whitespace character on the

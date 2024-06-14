@@ -20,7 +20,7 @@ const val NEWLINE = '\n'
 interface DedScope {
     val cellSize: IntSize
     val colors: DedColors
-    val cellOffset: IntOffset
+    val lineNumberLength: Int
 
     @Composable
     fun Modifier.position(row: Int, col: Int) = this.then(
@@ -39,8 +39,8 @@ interface DedScope {
     @Composable
     fun BodyGlyph(row: Int, col: Int, glyph: Char, fgColor: Color, bgColor: Color?) {
         CellGlyph(
-            row = row + cellOffset.y,
-            col = col + cellOffset.x,
+            row = row,
+            col = col + lineNumberLength,
             glyph = glyph,
             fgColor = fgColor,
             bgColor = bgColor

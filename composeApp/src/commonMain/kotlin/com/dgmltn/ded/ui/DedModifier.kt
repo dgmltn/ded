@@ -14,10 +14,14 @@ internal fun Modifier.dedFocusModifier(
     enabled: Boolean,
     focusRequester: FocusRequester,
     interactionSource: MutableInteractionSource?,
-    onFocusChanged: (FocusState) -> Unit
+    onFocused: () -> Unit,
+    onUnfocused: () -> Unit,
 ) = this
     .focusRequester(focusRequester)
-    .onFocusChanged(onFocusChanged)
+    .onFocusChanged {
+        if (it.isFocused) onFocused()
+        else onUnfocused()
+    }
     .focusable(interactionSource = interactionSource, enabled = enabled)
 
 @Composable

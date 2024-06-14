@@ -65,35 +65,32 @@ fun Ded(
         enabled = true,
         focusRequester = focusRequester,
         interactionSource = interactionSource,
-        onFocusChanged = { focusState ->
-            Logger.e { "onFocusChanged: $focusState" }
-            if (focusState.isFocused) {
-                dedState.inputSession = textInputService?.startInput(
-                    value = TextFieldValue(""),
-                    imeOptions = ImeOptions(
-                        autoCorrect = false,
-                        keyboardType = KeyboardType.Password,
-                    ),
-                    onEditCommand = { editCommands ->
-                        Logger.e { "onEditCommand: $editCommands" }
-                        editCommands.forEach {
-                            if (it is CommitTextCommand) {
-                                dedState.insert(it.text)
-                            }
+        onFocused = {
+            dedState.inputSession = textInputService?.startInput(
+                value = TextFieldValue(""),
+                imeOptions = ImeOptions(
+                    autoCorrect = false,
+                    keyboardType = KeyboardType.Password,
+                ),
+                onEditCommand = { editCommands ->
+                    Logger.e { "onEditCommand: $editCommands" }
+                    editCommands.forEach {
+                        if (it is CommitTextCommand) {
+                            dedState.insert(it.text)
                         }
-                    },
-                    onImeActionPerformed = { action ->
-                        Logger.e { "onImeActionPerformed: $action" }
-                    },
-                )
+                    }
+                },
+                onImeActionPerformed = { action ->
+                    Logger.e { "onImeActionPerformed: $action" }
+                },
+            )
+        },
+        onUnfocused = {
+            dedState.inputSession?.let {
+                textInputService?.stopInput(it)
             }
-            else {
-                dedState.inputSession?.let {
-                    textInputService?.stopInput(it)
-                }
-                dedState.inputSession = null
-            }
-        }
+            dedState.inputSession = null
+         }
     )
 
     val gestureModifier = Modifier.dedGestureModifier(dedState)

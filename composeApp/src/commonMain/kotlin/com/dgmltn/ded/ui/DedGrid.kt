@@ -46,8 +46,8 @@ fun DedGrid(
             override val colors
                 get() = colors
 
-            override val cellOffset: IntOffset
-                get() = state.cellOffset
+            override val lineNumberLength: Int
+                get() = state.lineNumberLength
         }
     }
 
