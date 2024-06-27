@@ -1,4 +1,4 @@
-package com.dgmltn.ded
+package com.dgmltn.ded.sample
 
 import DedTheme
 import android.annotation.SuppressLint
@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.tooling.preview.Preview
+import com.dgmltn.ded.App
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -19,7 +20,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
-
 
         setContent {
             DedTheme {

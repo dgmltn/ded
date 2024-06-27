@@ -1,5 +1,4 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.cli.jvm.main
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -56,11 +55,11 @@ kotlin {
 }
 
 android {
-    namespace = "com.dgmltn.ded"
+    namespace = "com.dgmltn.ded.sample"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "com.dgmltn.ded"
+        applicationId = "com.dgmltn.ded.sample"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
@@ -98,7 +97,7 @@ compose.desktop {
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "com.dgmltn.ded"
+            packageName = "com.dgmltn.ded.sample"
             packageVersion = "1.0.0"
         }
     }

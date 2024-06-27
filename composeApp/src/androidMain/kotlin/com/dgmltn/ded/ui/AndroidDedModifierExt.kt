@@ -7,12 +7,8 @@ import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import co.touchlab.kermit.Logger
-import com.dgmltn.ded.div
-import com.dgmltn.ded.editor.toRowCol
-import com.dgmltn.ded.toInt
 
 @Composable
 actual fun Modifier.dedGestureModifier(
