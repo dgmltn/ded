@@ -225,6 +225,22 @@ internal class EditorTest {
     }
 
     @Test
+    fun getRangeOfToken() {
+        editor.run {
+            getRangeOfToken(0) shouldEqual IntRange.EMPTY
+            insert("hello world")
+            getRangeOfToken(0) shouldEqual 0..4
+            getRangeOfToken(1) shouldEqual 0..4
+            getRangeOfToken(4) shouldEqual 0..4
+            getRangeOfToken(5) shouldEqual 5..5
+            getRangeOfToken(6) shouldEqual 6..10
+            getRangeOfToken(7) shouldEqual 6..10
+            getRangeOfToken(100) shouldEqual IntRange.EMPTY
+        }
+
+    }
+
+    @Test
     fun delete() {
         editor.run {
             cursor shouldEqual 0

@@ -94,6 +94,36 @@ interface Editor {
     fun getCharAt(position: Int): Char
 
     /**
+     * Returns the range of characters that make up the token/word at [position]. If the
+     * character at [position] is whitespace, the range returned will be the block of
+     * whitespace.
+     */
+    fun getRangeOfToken(
+        position: Int,
+        isIdentifierChar: (Char) -> Boolean = { it.isLetterOrDigit() || it == '_' }
+    ): IntRange {
+        if (length == 0 || position < 0 || position >= length) {
+            return IntRange.EMPTY
+        }
+
+        val isInsideToken = isIdentifierChar(getCharAt(position))
+
+        // Find the start of the token
+        var start = position
+        while (start > 0 && isInsideToken == isIdentifierChar(getCharAt(start - 1))) {
+            start--
+        }
+
+        // Find the end of the token
+        var end = position
+        while (end < (length - 1) && isInsideToken == isIdentifierChar(getCharAt(end + 1))) {
+            end++
+        }
+
+        return IntRange(start, end)
+    }
+
+    /**
      * Returns a new String that contains characters in this Editor
      * at startPosition (inclusive) and up to the endPosition (exclusive).
      *

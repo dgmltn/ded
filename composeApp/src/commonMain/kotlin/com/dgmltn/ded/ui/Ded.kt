@@ -19,7 +19,6 @@ import androidx.compose.ui.platform.LocalTextInputService
 import androidx.compose.ui.text.input.CommitTextCommand
 import androidx.compose.ui.text.input.ImeOptions
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PlatformImeOptions
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import co.touchlab.kermit.Logger
@@ -70,6 +69,7 @@ fun Ded(
                 value = TextFieldValue(""),
                 imeOptions = ImeOptions(
                     autoCorrect = false,
+//                    keyboardType = KeyboardType.Ascii, // Backspace doesn't work right with .Ascii
                     keyboardType = KeyboardType.Password,
                 ),
                 onEditCommand = { editCommands ->

@@ -43,10 +43,16 @@ private fun Modifier.detectTapGestures(
     dedState: DedState,
 ) = this
     .pointerInput(Unit) {
-        detectTapGestures { offset ->
-            val cellOffset = dedState.getCellAt(offset)
-            dedState.moveTo(cellOffset)
-        }
+        detectTapGestures(
+            onDoubleTap = { offset ->
+                val cellOffset = dedState.getCellAt(offset)
+                dedState.selectTokenAt(cellOffset)
+            },
+            onTap =  { offset ->
+                val cellOffset = dedState.getCellAt(offset)
+                dedState.moveTo(cellOffset)
+            },
+        )
     }
 
 @Composable

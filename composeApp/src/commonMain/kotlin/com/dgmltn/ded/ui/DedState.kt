@@ -30,6 +30,7 @@ import dev.snipme.highlights.model.ColorHighlight
 import dev.snipme.highlights.model.SyntaxLanguage
 import dev.snipme.highlights.model.SyntaxTheme
 import dev.snipme.highlights.model.SyntaxThemes
+import kotlinx.coroutines.joinAll
 
 @Composable
 fun rememberDedState(
@@ -88,28 +89,44 @@ class DedState(
 
     fun moveTo(rowCol: RowCol) = (editor.moveTo(rowCol) > -1).also { syncWithEditor() }
 
+    fun getPositionOf(rowCol: RowCol) = editor.getPositionOf(rowCol)
+
+    fun selectTokenAt(rowCol: RowCol) {
+        val range = editor.getRangeOfToken(editor.getPositionOf(rowCol))
+        editor.moveTo(range.last)
+        editor.select(range)
+        syncWithEditor()
+    }
+
     fun moveToBeginningOfLine() = moveTo(getBeginningOfLinePos())
 
     fun moveToEndOfLine() = moveTo(getEndOfLinePos())
 
     fun getCharAt(position: Int) = editor.getCharAt(position)
 
-    fun getRowColOfCursor() = editor.getRowColOfCursor()
-
-    fun getRangeOfRow(row: Int) = editor.getRangeOfRow(row)
-
     fun insert(value: String) = editor.insert(value).also { syncWithEditor() }
 
     fun tab(): Boolean {
         val tabSize = languageConfig.tabSize
-        val col = getRowColOfCursor().col
+        val col = editor.getRowColOfCursor().col
         val numOfSpaces = tabSize - (col % tabSize)
         return insert(" ".repeat(numOfSpaces))
     }
 
     fun delete(count: Int) = editor.delete(count).also { syncWithEditor() }
 
-    fun backspace() = (editor.backspace(1) == 1).also { syncWithEditor() }
+    /**
+     * Returns true if the selection was deleted. Cursor will be at the beginning of the selection.
+     */
+    private fun deleteSelection() =
+        selection?.run {
+            editor.moveTo(first)
+            editor.delete(count())
+            syncWithEditor()
+            true
+        } ?: false
+
+    fun backspace() = deleteSelection() || (editor.backspace(1) == 1).also { syncWithEditor() }
 
     fun undo() = editor.undo().also { syncWithEditor() }
 
@@ -223,8 +240,8 @@ class DedState(
      * return the beginning of the line instead.
      */
     private fun getBeginningOfLinePos(): Int {
-        val cursor = getRowColOfCursor()
-        val rangeOfRow = getRangeOfRow(cursor.row)
+        val cursor = editor.getRowColOfCursor()
+        val rangeOfRow = editor.getRangeOfRow(cursor.row)
         val indent = rangeOfRow.firstOrNull { !getCharAt(it).isWhitespace() }?.minus(rangeOfRow.first) ?: 0
         val pos = rangeOfRow.first + if (cursor.col == indent) 0 else indent
         return pos
@@ -238,8 +255,8 @@ class DedState(
      * character of the line.
      */
     private fun getEndOfLinePos(): Int {
-        val cursor = getRowColOfCursor()
-        val pos = if (cursor.row == rowCount - 1) length else getRangeOfRow(cursor.row).last
+        val cursor = editor.getRowColOfCursor()
+        val pos = if (cursor.row == rowCount - 1) length else editor.getRangeOfRow(cursor.row).last
         return pos
     }
 

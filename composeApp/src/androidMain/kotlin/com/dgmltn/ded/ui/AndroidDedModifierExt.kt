@@ -7,7 +7,9 @@ import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalHapticFeedback
 import co.touchlab.kermit.Logger
 
 @Composable
@@ -42,11 +44,14 @@ private fun Modifier.detectScrollGestures(
 @Composable
 private fun Modifier.detectTapGestures(
     dedState: DedState,
-)= this
-    .pointerInput(Unit) {
+): Modifier {
+    val haptic = LocalHapticFeedback.current
+    return this.pointerInput(Unit) {
         detectTapGestures(
-            onLongPress = {
-                //TODO: select the tapped word
+            onLongPress = { offset ->
+                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                val cellOffset = dedState.getCellAt(offset)
+                dedState.selectTokenAt(cellOffset)
             },
             onTap = { offset ->
                 dedState.inputSession?.showSoftwareKeyboard()
@@ -55,6 +60,7 @@ private fun Modifier.detectTapGestures(
             }
         )
     }
+}
 
 @Composable
 private fun Modifier.detectDragGestures(
