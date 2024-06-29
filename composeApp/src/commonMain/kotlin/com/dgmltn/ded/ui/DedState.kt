@@ -113,20 +113,24 @@ class DedState(
         return insert(" ".repeat(numOfSpaces))
     }
 
-    fun delete(count: Int) = editor.delete(count).also { syncWithEditor() }
+    /**
+     * Returns true if the delete was successful.
+     */
+    fun delete() = (editor.delete(1) == 1).also { syncWithEditor() }
 
     /**
      * Returns true if the selection was deleted. Cursor will be at the beginning of the selection.
      */
-    private fun deleteSelection() =
-        selection?.run {
+    fun delete(range: IntRange) =
+        range.run {
             editor.moveTo(first)
-            editor.delete(count())
-            syncWithEditor()
-            true
-        } ?: false
+            editor.delete(count()) == count()
+        }.also { syncWithEditor() }
 
-    fun backspace() = deleteSelection() || (editor.backspace(1) == 1).also { syncWithEditor() }
+    /**
+     * Returns true if the backspace was successful.
+     */
+    fun backspace() = (editor.backspace(1) == 1).also { syncWithEditor() }
 
     fun undo() = editor.undo().also { syncWithEditor() }
 

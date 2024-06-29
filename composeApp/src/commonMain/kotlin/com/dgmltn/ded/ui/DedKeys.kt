@@ -15,6 +15,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.key.utf16CodePoint
 import co.touchlab.kermit.Logger
 import com.dgmltn.ded.editor.RowCol
+import com.dgmltn.ded.toIntRange
 
 @Composable
 fun Modifier.dedKeyEvent(dedState: DedState) = then(
@@ -92,8 +93,8 @@ val keys: Map<ModifiedKey, DedState.() -> Boolean> = mapOf(
 
     // Spacing/newlines
     Key.Tab.modified() to { tab() },
-    Key.Backspace.modified() to { backspace() },
-    Key.Delete.modified() to { delete(1) == 1 },
+    Key.Backspace.modified() to { selection?.toIntRange()?.let { delete(it) } ?: backspace() },
+    Key.Delete.modified() to { selection?.toIntRange()?.let { delete(it) } ?: delete() },
 
     // Undo/redo
     Key.Z.modified(meta = true) to { undo() },

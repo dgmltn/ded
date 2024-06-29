@@ -4,7 +4,8 @@ package com.dgmltn.ded.editor
 interface Editor {
     // Editing
     /**
-     * Cursor can be between 0..length. Special cases have to be handled when cursor == length.
+     * Cursor can be between 0..length. Special cases have to
+     * be handled when cursor == length.
      */
     var cursor: Int
 
@@ -15,8 +16,8 @@ interface Editor {
     var selection: IntProgression?
 
     /**
-     * [position] can be any number. If it's outside the range 0..length, Editor will
-     * coerce in range.
+     * Moves the cursor to [position]. Can be any number. If it's outside
+     * the range 0..length, Editor will coerce in range.
      */
     fun moveTo(position: Int): Int {
         val l = length
