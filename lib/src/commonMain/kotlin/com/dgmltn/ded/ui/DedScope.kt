@@ -124,7 +124,7 @@ interface DedScope {
                     row = row,
                     col = col,
                     glyph = c,
-                    fgColor = colors.text,
+                    fgColor = colors.literal,
                     bgColor = colors.cursor,
                 )
             }
@@ -132,7 +132,7 @@ interface DedScope {
                 BodyGlyph(row, col, c, colors.selectionFg, colors.selectionBg)
             }
             else {
-                BodyGlyph(row, col, c, colorizer(i) ?: colors.text, null)
+                BodyGlyph(row, col, c, colorizer(i) ?: colors.literal, null)
             }
 
 

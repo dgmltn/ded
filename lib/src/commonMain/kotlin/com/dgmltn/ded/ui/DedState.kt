@@ -24,6 +24,7 @@ import com.dgmltn.ded.editor.StringBuilderEditor
 import com.dgmltn.ded.editor.language.JavascriptLanguageConfig
 import com.dgmltn.ded.editor.language.LanguageConfig
 import com.dgmltn.ded.theme.DedColors
+import com.dgmltn.ded.theme.DedDefaults
 import com.dgmltn.ded.toIntRange
 import dev.snipme.highlights.Highlights
 import dev.snipme.highlights.model.CodeHighlight
@@ -34,18 +35,18 @@ import dev.snipme.highlights.model.SyntaxTheme
 @Composable
 fun rememberDedState(
     editor: Editor = StringBuilderEditor(),
-    theme: DedColors = DedColors.Default,
+    colors: DedColors = DedDefaults.colors,
     languageConfig: LanguageConfig = JavascriptLanguageConfig(),
     clipboardManager: ClipboardManager = LocalClipboardManager.current,
 ): DedState {
     return remember {
-        DedState(clipboardManager, theme, editor, languageConfig)
+        DedState(clipboardManager, colors, editor, languageConfig)
     }
 }
 
 class DedState(
     private val clipboardManager: ClipboardManager,
-    private val theme: DedColors = DedColors.Default,
+    private val colors: DedColors = DedDefaults.colors,
     private val editor: Editor = StringBuilderEditor(),
     private val languageConfig: LanguageConfig = JavascriptLanguageConfig(),
 ) {
@@ -221,7 +222,7 @@ class DedState(
             )
 
     private val highlighter = Highlights.Builder()
-        .theme(theme.toSyntaxTheme())
+        .theme(colors.toSyntaxTheme())
         .language(SyntaxLanguage.JAVASCRIPT)
         .build()
 

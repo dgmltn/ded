@@ -1,12 +1,11 @@
-package com.dgmltn.ded.sample
+package com.dgmltn.ded.ui
 
-import DedTheme
-import LocalDefaults
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -15,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalTextInputService
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.CommitTextCommand
 import androidx.compose.ui.text.input.ImeOptions
 import androidx.compose.ui.text.input.KeyboardType
@@ -22,55 +22,38 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import co.touchlab.kermit.Logger
 import com.dgmltn.ded.theme.DedColors
-import com.dgmltn.ded.ui.DedGrid
-import com.dgmltn.ded.ui.dedFocusModifier
-import com.dgmltn.ded.ui.dedGestureModifier
-import com.dgmltn.ded.ui.dedKeyEvent
-import com.dgmltn.ded.ui.rememberDedState
+import com.dgmltn.ded.theme.DedDefaults
 
 @Composable
 fun Ded(
     modifier: Modifier = Modifier,
-    colors: DedColors = LocalDefaults.current.editor,
+    state: DedState = rememberDedState(),
+    colors: DedColors = DedDefaults.colors,
+    textStyle: TextStyle = LocalTextStyle.current,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     val textInputService = LocalTextInputService.current
 
     val focusRequester = remember { FocusRequester() }
 
-    val dedState = rememberDedState()
-
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
-        dedState.run {
-//            insert("const foo = \"bar\";")
-            insert("""
-                function hello() {
-                  console.log("Hello, world!");
-                  const x = 5;
-                  var y = 10;
-                  if (x == y) {
-                    console.log("x equals y");
-                  }
-                }
-            """.trimIndent())
-            moveTo(5)
-        }
     }
 
-    LaunchedEffect(dedState.fullText) {
-        dedState.buildHighlights()
+    LaunchedEffect(state.fullText) {
+        state.buildHighlights()
     }
 
     //TODO: look at BasicTextField for keyboard api
     //BasicTextField("", {})
+//    TextField()
 
     val focusModifier = Modifier.dedFocusModifier(
         enabled = true,
         focusRequester = focusRequester,
         interactionSource = interactionSource,
         onFocused = {
-            dedState.inputSession = textInputService?.startInput(
+            state.inputSession = textInputService?.startInput(
                 value = TextFieldValue(""),
                 imeOptions = ImeOptions(
                     autoCorrect = false,
@@ -81,7 +64,7 @@ fun Ded(
                     Logger.e { "onEditCommand: $editCommands" }
                     editCommands.forEach {
                         if (it is CommitTextCommand) {
-                            dedState.insert(it.text)
+                            state.insert(it.text)
                         }
                     }
                 },
@@ -91,34 +74,29 @@ fun Ded(
             )
         },
         onUnfocused = {
-            dedState.inputSession?.let {
+            state.inputSession?.let {
                 textInputService?.stopInput(it)
             }
-            dedState.inputSession = null
+            state.inputSession = null
          }
     )
 
-    val gestureModifier = Modifier.dedGestureModifier(dedState)
+    val gestureModifier = Modifier.dedGestureModifier(state)
 
     Box(
         modifier = modifier
             .background(colors.canvas)
             .padding(5.dp)
             .then(focusModifier)
-            .dedKeyEvent(dedState)
+            .dedKeyEvent(state)
             .then(gestureModifier)
 
     ) {
         DedGrid(
-            state = dedState,
+            state = state,
             modifier = Modifier.fillMaxSize(),
-            textStyle = DedTheme.typography.code,
+            textStyle = textStyle,
             colors = colors
-        )
-
-        Text(
-            modifier = Modifier.align(Alignment.BottomEnd),
-            text = dedState.cursorPos.toString(),
         )
     }
 }

@@ -14,6 +14,7 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.IntOffset
 import co.touchlab.kermit.Logger
 import com.dgmltn.ded.theme.DedColors
+import com.dgmltn.ded.theme.DedDefaults
 
 private const val GLYPH = "W"
 
@@ -22,7 +23,7 @@ fun DedGrid(
     modifier: Modifier = Modifier,
     state: DedState = rememberDedState(),
     textStyle: TextStyle = LocalTextStyle.current,
-    colors: DedColors = DedColors.Default  //TODO: LocalDefaults.current.editor
+    colors: DedColors = DedDefaults.colors,
 ) {
     val textMeasurer = rememberTextMeasurer()
 
