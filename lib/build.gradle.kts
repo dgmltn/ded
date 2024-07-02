@@ -6,20 +6,49 @@ plugins {
     id("maven-publish")
 }
 
-group = "com.dgmltn"
-version = "1.0"
-
+// https://docs.gradle.org/current/userguide/publishing_maven.html
 publishing {
+    // https://github.com/russhwolf/multiplatform-settings/blob/main/build.gradle.kts#L55C1-L55C70
+    publications.withType<MavenPublication>().configureEach {
+        groupId = "com.dgmltn"
+        artifactId = "ded"
+        version = "1.0.0"
+    }
+
+
+//            pom {
+//                name.set("Ded - Doug's Editor")
+//                description.set("A Kotlin Multiplatform library for building text editors.")
+//                url.set("https://github.com/dgmltn/ded")
+//
+//                licenses {
+//                    license {
+//                        name.set("The Apache Software License, Version 2.0")
+//                        url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+//                        distribution.set("repo")
+//                    }
+//                }
+//                developers {
+//                    developer {
+//                        id.set("dgmltn")
+//                        name.set("Doug Melton")
+//                    }
+//                }
+//                scm {
+//                    url.set("https://github.com/dgmltn/ded")
+//                }
+//            }
     repositories {
-        maven {
+        mavenLocal()
+//        maven {
 //            ...
-        }
+//        }
     }
 }
 
 kotlin {
     androidTarget {
-        publishLibraryVariants("release", "debug")
+        publishAllLibraryVariants()
     }
 
     jvm("desktop") {
