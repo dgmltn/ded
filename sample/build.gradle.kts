@@ -1,4 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -12,6 +13,7 @@ kotlin {
     androidTarget()
     
     jvm("desktop") {
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
         mainRun {
             mainClass.set("com.dgmltn.ded.sample.MainKt")
         }
