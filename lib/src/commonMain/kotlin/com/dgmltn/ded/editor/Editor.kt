@@ -15,6 +15,11 @@ interface Editor {
      */
     var selection: IntProgression?
 
+    // Reading
+    val value: String
+    val rowCount: Int
+    val length: Int
+
     /**
      * Moves the cursor to [position]. Can be any number. If it's outside
      * the range 0..length, Editor will coerce in range.
@@ -86,11 +91,6 @@ interface Editor {
     fun canRedo(): Boolean
 
     fun redo(): Boolean
-
-    // Reading
-    val value: String
-    val rowCount: Int
-    val length: Int
 
     fun getCharAt(position: Int): Char
 

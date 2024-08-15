@@ -2,15 +2,21 @@ package com.dgmltn.ded.editor
 
 import kotlin.test.assertEquals
 import kotlin.test.BeforeTest
+import kotlin.test.AfterTest
 import kotlin.test.Test
 
 internal class EditorTest {
 
-    var editor: Editor = StringBuilderEditor()
+    var editor: LoggingEditor = LoggingEditor(StringBuilderEditor())
 
     @BeforeTest
     fun setup() {
-        editor = StringBuilderEditor()
+        editor = LoggingEditor(StringBuilderEditor())
+    }
+
+    @AfterTest
+    fun after() {
+        editor.printStats()
     }
 
     @Test
@@ -85,7 +91,7 @@ internal class EditorTest {
 
     @Test
     fun initial_value() {
-        editor = StringBuilderEditor("initial")
+        editor = LoggingEditor(StringBuilderEditor("initial"))
         editor.run {
             value shouldEqual "initial"
             canUndo() shouldEqual false

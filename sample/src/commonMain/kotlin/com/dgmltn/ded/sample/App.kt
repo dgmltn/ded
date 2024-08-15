@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
@@ -14,17 +15,22 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dgmltn.ded.editor.LoggingEditor
+import com.dgmltn.ded.editor.StringBuilderEditor
 import com.dgmltn.ded.ui.Ded
 import com.dgmltn.ded.ui.rememberDedState
 import ded.sample.generated.resources.Res
 import ded.sample.generated.resources.fira_code_regular
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 @Preview
 fun App(modifier: Modifier = Modifier) {
-    val state = rememberDedState("""
+    val editor = remember {
+        LoggingEditor(StringBuilderEditor("""
                 function hello() {
                   console.log("Hello, world!");
                   const x = 5;
@@ -33,7 +39,17 @@ fun App(modifier: Modifier = Modifier) {
                     console.log("x equals y");
                   }
                 }
-            """.trimIndent())
+            """.trimIndent(),
+        ))
+    }
+    val state = rememberDedState(editor = editor)
+
+    LaunchedEffect(editor) {
+        while(true) {
+            delay(10.seconds)
+            editor.printStats()
+        }
+    }
 
     val textStyle = TextStyle(
         fontFamily = FontFamily(
