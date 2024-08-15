@@ -24,19 +24,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 @Composable
 @Preview
 fun App(modifier: Modifier = Modifier) {
-    val state = rememberDedState()
-
-    val textStyle = TextStyle(
-        fontFamily = FontFamily(
-            Font(Res.font.fira_code_regular, FontWeight.Normal, FontStyle.Normal)
-        ),
-        fontSize = 18.sp
-    )
-
-    LaunchedEffect(Unit) {
-        state.run {
-//            insert("const foo = \"bar\";")
-            insert("""
+    val state = rememberDedState("""
                 function hello() {
                   console.log("Hello, world!");
                   const x = 5;
@@ -46,13 +34,17 @@ fun App(modifier: Modifier = Modifier) {
                   }
                 }
             """.trimIndent())
-            moveTo(5)
-        }
-    }
 
-    Box(modifier = modifier.fillMaxSize()) {
+    val textStyle = TextStyle(
+        fontFamily = FontFamily(
+            Font(Res.font.fira_code_regular, FontWeight.Normal, FontStyle.Normal)
+        ),
+        fontSize = 18.sp
+    )
+
+    Box(modifier = modifier.fillMaxSize().padding(24.dp)) {
         Ded(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize(),
             state = state,
             textStyle = textStyle,
@@ -62,7 +54,7 @@ fun App(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(5.dp),
-            text = state.cursorPos.toString(),
+            text = state.cursor.toString(),
         )
     }
 }

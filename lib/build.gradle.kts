@@ -80,7 +80,6 @@ kotlin {
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
             implementation(libs.kermit)
-            implementation(libs.highlights)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
@@ -122,4 +121,7 @@ android {
     dependencies {
         debugImplementation(libs.compose.ui.tooling)
     }
+}
+dependencies {
+    implementation(libs.kotlin.test)
 }

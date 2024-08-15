@@ -2,7 +2,7 @@ package com.dgmltn.ded.editor
 
 import com.dgmltn.ded.toIntRange
 
-class StringBuilderEditor: Editor {
+class StringBuilderEditor(initialValue: String? = null): Editor {
     override var cursor = 0
 
     override var selection: IntProgression? = null
@@ -16,7 +16,7 @@ class StringBuilderEditor: Editor {
     override val length: Int
         get() = builder.length
 
-    private val builder = StringBuilder()
+    private val builder = if (initialValue != null) StringBuilder(initialValue) else StringBuilder()
 
     private val edits = EditsBuffer()
 

@@ -104,7 +104,7 @@ interface DedScope {
         length: Int,
         getCharAt: (Int) -> Char,
         colorizer: (Int) -> Color?,
-        cursorPos: Int,
+        cursor: Int,
         selection: IntProgression?,
     ) {
         var row = 0
@@ -119,7 +119,7 @@ interface DedScope {
             }
 
             // Draw glyph (if it's drawable)
-            if (i == cursorPos) {
+            if (i == cursor) {
                 BodyGlyph(
                     row = row,
                     col = col,

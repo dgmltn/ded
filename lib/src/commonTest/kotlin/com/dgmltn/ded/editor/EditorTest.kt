@@ -84,6 +84,24 @@ internal class EditorTest {
     }
 
     @Test
+    fun initial_value() {
+        editor = StringBuilderEditor("initial")
+        editor.run {
+            value shouldEqual "initial"
+            canUndo() shouldEqual false
+            canRedo() shouldEqual false
+            cursor shouldEqual 0
+            moveTo(7)
+            insert(" inserted")
+            value shouldEqual "initial inserted"
+            canUndo() shouldEqual true
+            canRedo() shouldEqual false
+            undo()
+            value shouldEqual "initial"
+        }
+    }
+
+    @Test
     fun cursor() {
         editor.run {
             cursor shouldEqual 0

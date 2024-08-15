@@ -12,6 +12,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.platform.LocalTextInputService
 import androidx.compose.ui.text.TextStyle
@@ -38,10 +39,6 @@ fun Ded(
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
-    }
-
-    LaunchedEffect(state.fullText) {
-        state.buildHighlights()
     }
 
     //TODO: look at BasicTextField for keyboard api
@@ -86,6 +83,7 @@ fun Ded(
     Box(
         modifier = modifier
             .background(colors.canvas)
+            .clipToBounds()
             .padding(5.dp)
             .then(focusModifier)
             .dedKeyEvent(state)

@@ -62,7 +62,7 @@ fun DedGrid(
         CompositionLocalProvider(
             LocalTextStyle provides textStyle,
         ) {
-            scope.AllVisibleGlyphs(state.length, state::getCharAt, state::getColorOf, state.cursorPos, state.selection)
+            scope.AllVisibleGlyphs(state.length, state::getCharAt, state::getColorOf, state.cursor, state.selection)
         }
     }
 }

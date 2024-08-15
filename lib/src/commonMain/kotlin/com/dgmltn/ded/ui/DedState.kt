@@ -1,7 +1,5 @@
 package com.dgmltn.ded.ui
 
-import androidx.compose.foundation.MutatePriority
-import androidx.compose.foundation.MutatorMutex
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -11,13 +9,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.ClipboardManager
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.TextInputSession
 import androidx.compose.ui.unit.IntSize
-import co.touchlab.kermit.Logger
 import com.dgmltn.ded.editor.Editor
 import com.dgmltn.ded.editor.RowCol
 import com.dgmltn.ded.editor.StringBuilderEditor
@@ -26,36 +22,33 @@ import com.dgmltn.ded.editor.language.LanguageConfig
 import com.dgmltn.ded.theme.DedColors
 import com.dgmltn.ded.theme.DedDefaults
 import com.dgmltn.ded.toIntRange
-import dev.snipme.highlights.Highlights
-import dev.snipme.highlights.model.CodeHighlight
-import dev.snipme.highlights.model.ColorHighlight
-import dev.snipme.highlights.model.SyntaxLanguage
-import dev.snipme.highlights.model.SyntaxTheme
 
 @Composable
 fun rememberDedState(
-    editor: Editor = StringBuilderEditor(),
+    initialValue: String = "",
+    editor: Editor = StringBuilderEditor(initialValue),
     colors: DedColors = DedDefaults.colors,
     languageConfig: LanguageConfig = JavascriptLanguageConfig(),
     clipboardManager: ClipboardManager = LocalClipboardManager.current,
 ): DedState {
     return remember {
-        DedState(clipboardManager, colors, editor, languageConfig)
+        DedState(initialValue, clipboardManager, colors, editor, languageConfig)
     }
 }
 
 class DedState(
+    initialValue: String? = null,
     private val clipboardManager: ClipboardManager,
     private val colors: DedColors = DedDefaults.colors,
-    private val editor: Editor = StringBuilderEditor(),
+    private val editor: Editor = StringBuilderEditor(initialValue),
     private val languageConfig: LanguageConfig = JavascriptLanguageConfig(),
 ) {
     // The full text of the editor. This should be optimized but for now it's needed
     // to build highlights.
-    var fullText by mutableStateOf(editor.value)
+    var value by mutableStateOf(editor.value)
 
     // The current cursor position of the editor
-    var cursorPos by mutableStateOf(editor.cursor)
+    var cursor by mutableStateOf(editor.cursor)
 
     // The current selection range of the editor
     var selection by mutableStateOf(editor.selection)
@@ -76,10 +69,14 @@ class DedState(
     var windowYScrollPx by mutableFloatStateOf(0f)
 
     // Calculated by the highlighter library
-    private var highlights by mutableStateOf(emptyList<CodeHighlight>())
+//    private var highlights by mutableStateOf(emptyList<CodeHighlight>())
 
     // Related to the software keyboard
     var inputSession: TextInputSession? = null
+
+    init {
+        syncWithEditor()
+    }
 
     fun moveBy(rowCol: RowCol) = (editor.moveBy(rowCol) > -1).also { syncWithEditor() }
 
@@ -169,21 +166,11 @@ class DedState(
 
     private val colorCache = mutableMapOf<Int, Color>()
     fun getColorOf(position: Int): Color? =
-        highlights
-            .filterIsInstance<ColorHighlight>()
-            .firstOrNull { position >= it.location.start && position < it.location.end }
-            ?.rgb
-            ?.let { rgb ->
-                if (colorCache.contains(rgb))
-                    colorCache[rgb]!!
-                else
-                    Color(rgb).copy(alpha = 1f)
-                        .also { colorCache[rgb] = it }
-            }
+        null
 
     private fun syncWithEditor() {
-        fullText = editor.value
-        cursorPos = editor.cursor
+        value = editor.value
+        cursor = editor.cursor
         selection = editor.selection
         length = editor.length
         rowCount = editor.rowCount
@@ -204,47 +191,6 @@ class DedState(
         }
         else if (maxVisibleRow * cellSizePx.height > windowYScrollPx + windowSizePx.height) {
             windowYScrollPx = (maxVisibleRow * cellSizePx.height - windowSizePx.height).toFloat()
-        }
-    }
-
-    private fun DedColors.toSyntaxTheme() =
-            SyntaxTheme(
-                key = "Ded Theme",
-                code = code.toArgb(),
-                keyword = keyword.toArgb(),
-                string = string.toArgb(),
-                literal = literal.toArgb(),
-                comment = comment.toArgb(),
-                metadata = metadata.toArgb(),
-                multilineComment = multilineComment.toArgb(),
-                punctuation = punctuation.toArgb(),
-                mark = mark.toArgb(),
-            )
-
-    private val highlighter = Highlights.Builder()
-        .theme(colors.toSyntaxTheme())
-        .language(SyntaxLanguage.JAVASCRIPT)
-        .build()
-
-    private val highlightsMutex = MutatorMutex()
-
-    private val isBuildingHighlights = mutableStateOf(false)
-
-    suspend fun buildHighlights() {
-        highlightsMutex.mutateWith(highlighter, MutatePriority.Default) {
-            isBuildingHighlights.value = true
-            try {
-                highlights = highlighter
-                    .getBuilder()
-                    .code(editor.value)
-                    .build()
-                    .getHighlights()
-//                highlighter.setCode(editor.value)
-//                highlights = getHighlights()
-                Logger.e { "Highlights: $highlights" }
-            } finally {
-                isBuildingHighlights.value = false
-            }
         }
     }
 

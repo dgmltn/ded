@@ -45,7 +45,7 @@ kotlin {
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
             implementation(libs.kermit)
-            implementation(libs.highlights)
+//            implementation(libs.highlights)
             implementation(project(":lib"))
         }
         desktopMain.dependencies {
