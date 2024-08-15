@@ -11,12 +11,14 @@ class StringBuilderEditor(initialValue: String? = null): Editor {
         get() = builder.toString()
 
     override val rowCount: Int
-        get() = builder.count { it == '\n' } + 1
+        get() = _rowCount
 
     override val length: Int
         get() = builder.length
 
     private val builder = if (initialValue != null) StringBuilder(initialValue) else StringBuilder()
+
+    private var _rowCount = builder.countNewlines() + 1
 
     private val edits = EditsBuffer()
 
@@ -146,11 +148,13 @@ class StringBuilderEditor(initialValue: String? = null): Editor {
         when (edit) {
             is Edit.Insert -> {
                 builder.insert(edit.position, edit.value)
+                _rowCount += edit.value.countNewlines()
                 moveTo(edit.position + edit.value.length)
                 true
             }
             is Edit.Delete -> {
                 builder.deleteRange(edit.position, edit.position + edit.value.length)
+                _rowCount -= edit.value.countNewlines()
                 moveTo(edit.position)
                 true
             }
@@ -158,8 +162,13 @@ class StringBuilderEditor(initialValue: String? = null): Editor {
                 // Can't use replaceRange because that returns a whole new StringBuilder
                 builder.deleteRange(edit.position, edit.position + edit.oldValue.length)
                 builder.insert(edit.position, edit.newValue)
+                _rowCount = _rowCount + edit.newValue.countNewlines() - edit.oldValue.countNewlines()
                 moveTo(edit.position + edit.newValue.length)
                 true
             }
         }
+
+    private fun StringBuilder.countNewlines() = count { it == '\n' }
+    private fun String.countNewlines() = count { it == '\n' }
+
 }
