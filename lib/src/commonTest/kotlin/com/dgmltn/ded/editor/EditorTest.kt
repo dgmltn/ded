@@ -189,28 +189,29 @@ internal class EditorTest {
             insert("hello world")
             value shouldEqual "hello world"
 
-            getRangeOfAllRows()[0] shouldEqual 0 .. 10
+            getRangeOfRow(0) shouldEqual 0 .. 10
 
             insert("\n")
             insert("line #2")
             insert("\nline #3\n")
 
-            val lines = getRangeOfAllRows()
-            lines[0] shouldEqual 0 .. 11
-            lines[1] shouldEqual 12 .. 19
-            lines[2] shouldEqual 20 .. 27
+            getRangeOfRow(0) shouldEqual 0 .. 11
+            getRangeOfRow(1) shouldEqual 12 .. 19
+            getRangeOfRow(2) shouldEqual 20 .. 27
         }
     }
 
     @Test
     fun getLine() {
         editor.run {
-            insert("hello\nworld\nline3\nline4")
-            value shouldEqual "hello\nworld\nline3\nline4"
-            rowCount shouldEqual 4
+            insert("hello\nworld\nline3\n\nline4\n")
+            value shouldEqual "hello\nworld\nline3\n\nline4\n"
+            rowCount shouldEqual 6
             getRangeOfRow(0) shouldEqual 0..5
             getRangeOfRow(1) shouldEqual 6..11
-            getRangeOfRow(3) shouldEqual 18..22
+            getRangeOfRow(3) shouldEqual 18..18
+            getRangeOfRow(4) shouldEqual 19..24
+            getRangeOfRow(5) shouldEqual 25..25
         }
     }
 
@@ -223,11 +224,34 @@ internal class EditorTest {
         }
     }
 
+
+    @Test
+    fun getRowOf() {
+        editor.run {
+            getRowOf(0) shouldEqual 0
+            insert("foo\nbar\nbaz")
+            getRowOf(3) shouldEqual 0
+            getRowOf(4) shouldEqual 1
+            getRowOf(10) shouldEqual 2
+            insert("\n")
+            getRowOf(11) shouldEqual 2
+            getRowOf(12) shouldEqual 3
+        }
+    }
+
     @Test
     fun getRowColOf() {
         editor.run {
+            getRowColOf(0) shouldEqual RowCol(0, 0)
             insert("hello\nworld\nline3\nline4")
+            getRowColOf(0) shouldEqual RowCol(0, 0)
+            getRowColOf(5) shouldEqual RowCol(0, 5)
+            getRowColOf(6) shouldEqual RowCol(1, 0)
             getRowColOf(15) shouldEqual RowCol(2, 3)
+            getRowColOf(22) shouldEqual RowCol(3, 4)
+            insert("\n")
+            getRowColOf(23) shouldEqual RowCol(3, 5)
+            getRowColOf(24) shouldEqual RowCol(4, 0)
         }
     }
 

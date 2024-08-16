@@ -41,7 +41,7 @@ interface Editor {
     }
 
     fun moveBy(rowColDelta: RowCol): Int {
-        val rowCol = getRowColOf(cursor)
+        val rowCol = getRowColOfCursor()
         val nextRow = rowCol.row + rowColDelta.row
         return if (nextRow < 0) {
             moveTo(0)
@@ -139,8 +139,6 @@ interface Editor {
     fun getSubstring(range: IntRange) =
         getSubstring(range.first, range.last + 1)
 
-    fun getRangeOfAllRows(): List<IntRange>
-
     fun getRangeOfRow(row: Int): IntRange
 
     fun getPositionOf(rowCol: RowCol): Int {
@@ -155,7 +153,14 @@ interface Editor {
 
     fun getLastRow() = (rowCount - 1).coerceAtLeast(0)
 
-    fun getRowColOf(position: Int): RowCol
+    fun getRowOf(position: Int): Int
+
+    fun getRowColOf(position: Int): RowCol {
+        val row = getRowOf(position)
+        val rangeOfRow = getRangeOfRow(row)
+        val col = position - rangeOfRow.first
+        return RowCol(row, col)
+    }
 
     fun getRowColOfCursor() = getRowColOf(cursor)
 }

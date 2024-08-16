@@ -18,7 +18,7 @@ class LoggingEditor(private val child: Editor): Editor {
     }
 
     fun printStats() {
-        println("=======\nStats:\n=======")
+        println("# Stats:\n")
         timings.keys.sortedBy { timings[it] }.forEach {
             val t = timings[it]!!
             val c = counts[it]!!
@@ -77,12 +77,43 @@ class LoggingEditor(private val child: Editor): Editor {
     override fun getSubstring(startPosition: Int, endPosition: Int) =
         timeMe { child.getSubstring(startPosition, endPosition) }
 
-    override fun getRangeOfAllRows() =
-        timeMe { child.getRangeOfAllRows() }
-
     override fun getRangeOfRow(row: Int) =
         timeMe { child.getRangeOfRow(row) }
 
     override fun getRowColOf(position: Int) =
         timeMe { child.getRowColOf(position) }
+
+    override fun moveTo(position: Int) =
+        timeMe { child.moveTo(position) }
+
+    override fun moveTo(rowCol: RowCol) =
+        timeMe { child.moveTo(rowCol) }
+
+    override fun moveBy(delta: Int) =
+        timeMe { child.moveBy(delta) }
+
+    override fun moveBy(rowColDelta: RowCol) =
+        timeMe { child.moveBy(rowColDelta) }
+
+    override fun select(range: IntProgression) {
+        timeMe { child.select(range) }
+    }
+
+    override fun getRangeOfToken(position: Int, isIdentifierChar: (Char) -> Boolean) =
+        timeMe { child.getRangeOfToken(position, isIdentifierChar) }
+
+    override fun getSubstring(range: IntRange) =
+        timeMe { child.getSubstring(range) }
+
+    override fun getPositionOf(rowCol: RowCol) =
+        timeMe { child.getPositionOf(rowCol) }
+
+    override fun getLastRow() =
+        timeMe { child.getLastRow() }
+
+    override fun getRowOf(position: Int) =
+        timeMe { child.getRowOf(position) }
+
+    override fun getRowColOfCursor() =
+        timeMe { child.getRowColOfCursor() }
 }

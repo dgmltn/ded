@@ -174,7 +174,7 @@ class DedState(
         selection = editor.selection
         length = editor.length
         rowCount = editor.rowCount
-        lineNumberLength = "${editor.getRowColOf(length).row + 1} ".length
+        lineNumberLength = "${editor.getLastRow() + 1} ".length
 
         // In case rowCount changed
         maxWindowYScrollPx = (rowCount * cellSizePx.height - windowSizePx.height).coerceAtLeast(0)
