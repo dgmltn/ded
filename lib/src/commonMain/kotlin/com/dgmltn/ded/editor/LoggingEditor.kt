@@ -18,7 +18,7 @@ class LoggingEditor(private val child: Editor): Editor {
     }
 
     fun printStats() {
-        println("# Stats:\n")
+        println("\n\n# Stats:\n")
         timings.keys.sortedBy { timings[it] }.forEach {
             val t = timings[it]!!
             val c = counts[it]!!
@@ -30,6 +30,12 @@ class LoggingEditor(private val child: Editor): Editor {
         get() = timeMe { child.cursor }
         set(value) {
             timeMe { child.cursor = value }
+        }
+
+    override var cursorRowCol: RowCol?
+        get() = timeMe { child.cursorRowCol }
+        set(value) {
+            timeMe { child.cursorRowCol = value }
         }
 
     override var selection: IntProgression?

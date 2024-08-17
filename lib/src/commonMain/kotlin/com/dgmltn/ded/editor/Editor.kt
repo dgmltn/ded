@@ -10,6 +10,11 @@ interface Editor {
     var cursor: Int
 
     /**
+     * Cache the RowCol of the cursor.
+     */
+    var cursorRowCol: RowCol?
+
+    /**
      * Selection is a range of characters that are selected.
      * If selection is null, nothing is selected.
      */
@@ -27,6 +32,7 @@ interface Editor {
     fun moveTo(position: Int): Int {
         val l = length
         cursor = position.coerceIn(0, l)
+        cursorRowCol = null
         selection = null
         return cursor
     }
@@ -139,6 +145,10 @@ interface Editor {
     fun getSubstring(range: IntRange) =
         getSubstring(range.first, range.last + 1)
 
+    /**
+     * Returns the range of characters in a particular row, inclusive to the first
+     * and last position.
+     */
     fun getRangeOfRow(row: Int): IntRange
 
     fun getPositionOf(rowCol: RowCol): Int {
@@ -156,10 +166,16 @@ interface Editor {
     fun getRowOf(position: Int): Int
 
     fun getRowColOf(position: Int): RowCol {
+        // Special case for cursor
+        if (position == cursor) cursorRowCol?.let { return it }
+
         val row = getRowOf(position)
         val rangeOfRow = getRangeOfRow(row)
         val col = position - rangeOfRow.first
+
         return RowCol(row, col)
+            // Special case for cursor
+            .also { if (position == cursor) cursorRowCol = it }
     }
 
     fun getRowColOfCursor() = getRowColOf(cursor)

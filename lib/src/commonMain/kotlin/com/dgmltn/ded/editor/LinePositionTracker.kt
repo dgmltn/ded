@@ -74,7 +74,7 @@ class LinePositionTracker(private val text: StringBuilder) {
             // 0 length
             length == 0 -> 0 .. 0
             // no newlines
-            rowCount == 1 -> 0 until length //TODO: is this right?
+            rowCount == 1 -> 0 until length
             // first line
             row == 0 -> 0 .. newline(0)
             // last line of a file that ends with newline
