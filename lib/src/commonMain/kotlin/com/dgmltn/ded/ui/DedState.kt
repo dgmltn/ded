@@ -86,11 +86,10 @@ class DedState(
 
     fun moveTo(rowCol: RowCol) = (editor.moveTo(rowCol) > -1).also { syncWithEditor() }
 
-    fun getPositionOf(rowCol: RowCol) = editor.getPositionOf(rowCol)
-
     fun selectTokenAt(rowCol: RowCol) {
-        val range = editor.getRangeOfToken(editor.getPositionOf(rowCol))
-        editor.moveTo(range.last)
+        editor.moveTo(rowCol)
+        val range = editor.getRangeOfToken(editor.cursor)
+        editor.moveBy(range.last - editor.cursor)
         editor.select(range)
         syncWithEditor()
     }
@@ -105,7 +104,7 @@ class DedState(
 
     fun tab(): Boolean {
         val tabSize = languageConfig.tabSize
-        val col = editor.getRowColOfCursor().col
+        val col = editor.getColOfCursor()
         val numOfSpaces = tabSize - (col % tabSize)
         return insert(" ".repeat(numOfSpaces))
     }
@@ -141,7 +140,7 @@ class DedState(
     fun copy(): Boolean {
         val localSelection = selection
             ?.toIntRange()
-            ?: editor.getRangeOfRow(editor.getRowColOfCursor().row)
+            ?: editor.getRangeOfRow(editor.getRowOfCursor())
                 .also {
                     editor.select(it)
                     syncWithEditor()
@@ -183,7 +182,7 @@ class DedState(
         }
 
         // Make sure cursor is visible
-        val cursorRow = editor.getRowColOfCursor().row
+        val cursorRow = editor.getRowOfCursor()
         val minVisibleRow = (cursorRow - 1).coerceAtLeast(0)
         val maxVisibleRow = (cursorRow + 1)
         if (minVisibleRow * cellSizePx.height < windowYScrollPx) {
@@ -203,10 +202,9 @@ class DedState(
      * return the beginning of the line instead.
      */
     private fun getBeginningOfLinePos(): Int {
-        val cursor = editor.getRowColOfCursor()
-        val rangeOfRow = editor.getRangeOfRow(cursor.row)
+        val rangeOfRow = editor.getRangeOfRow(editor.getRowOfCursor())
         val indent = rangeOfRow.firstOrNull { !getCharAt(it).isWhitespace() }?.minus(rangeOfRow.first) ?: 0
-        val pos = rangeOfRow.first + if (cursor.col == indent) 0 else indent
+        val pos = rangeOfRow.first + if (editor.getColOfCursor() == indent) 0 else indent
         return pos
     }
 
@@ -218,8 +216,8 @@ class DedState(
      * character of the line.
      */
     private fun getEndOfLinePos(): Int {
-        val cursor = editor.getRowColOfCursor()
-        val pos = if (cursor.row == rowCount - 1) length else editor.getRangeOfRow(cursor.row).last
+        val cursorRow = editor.getRowOfCursor()
+        val pos = if (cursorRow == rowCount - 1) length else editor.getRangeOfRow(cursorRow).last
         return pos
     }
 

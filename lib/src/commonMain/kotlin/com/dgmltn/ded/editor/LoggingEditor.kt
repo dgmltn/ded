@@ -32,11 +32,13 @@ class LoggingEditor(private val child: Editor): Editor {
             timeMe { child.cursor = value }
         }
 
-    override var cursorRowCol: RowCol?
-        get() = timeMe { child.cursorRowCol }
-        set(value) {
-            timeMe { child.cursorRowCol = value }
-        }
+    override var cursorRow: Int?
+        get() = timeMe { child.cursorRow }
+        set(value) { child.cursorRow = value }
+
+    override var cursorCol: Int?
+        get() = timeMe { child.cursorCol }
+        set(value) { child.cursorRow = value }
 
     override var selection: IntProgression?
         get() = timeMe { child.selection }
@@ -86,9 +88,6 @@ class LoggingEditor(private val child: Editor): Editor {
     override fun getRangeOfRow(row: Int) =
         timeMe { child.getRangeOfRow(row) }
 
-    override fun getRowColOf(position: Int) =
-        timeMe { child.getRowColOf(position) }
-
     override fun moveTo(position: Int) =
         timeMe { child.moveTo(position) }
 
@@ -111,15 +110,15 @@ class LoggingEditor(private val child: Editor): Editor {
     override fun getSubstring(range: IntRange) =
         timeMe { child.getSubstring(range) }
 
-    override fun getPositionOf(rowCol: RowCol) =
-        timeMe { child.getPositionOf(rowCol) }
-
     override fun getLastRow() =
         timeMe { child.getLastRow() }
 
     override fun getRowOf(position: Int) =
         timeMe { child.getRowOf(position) }
 
-    override fun getRowColOfCursor() =
-        timeMe { child.getRowColOfCursor() }
+    override fun getRowOfCursor() =
+        timeMe { child.getRowOfCursor() }
+
+    override fun getColOfCursor() =
+        timeMe { child.getColOfCursor() }
 }

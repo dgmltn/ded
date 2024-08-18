@@ -8,11 +8,8 @@ interface Editor {
      * be handled when cursor == length.
      */
     var cursor: Int
-
-    /**
-     * Cache the RowCol of the cursor.
-     */
-    var cursorRowCol: RowCol?
+    var cursorRow: Int?
+    var cursorCol: Int?
 
     /**
      * Selection is a range of characters that are selected.
@@ -31,21 +28,33 @@ interface Editor {
      */
     fun moveTo(position: Int): Int {
         cursor = position.coerceIn(0, length)
-        cursorRowCol = null
+        cursorRow = null
+        cursorCol = null
         selection = null
         return cursor
     }
 
     fun moveTo(rowCol: RowCol): Int {
-        val pos = getPositionOf(rowCol)
-        return moveTo(pos)
+        val lastRow = getLastRow()
+        val nextRow = rowCol.row.coerceIn(0, lastRow)
+        val rowRange = getRangeOfRow(nextRow)
+        val nextCol = when(nextRow) {
+            lastRow -> rowCol.col.coerceIn(0 .. rowRange.count())
+            else -> rowCol.col.coerceIn(0 until rowRange.count())
+        }
+        cursor = rowRange.first + nextCol
+        cursorRow = nextRow
+        cursorCol = nextCol
+        selection = null
+        return cursor
     }
 
     fun moveBy(delta: Int): Int {
         if (delta > 0) {
             val coercedDelta = delta.coerceAtMost(length - cursor)
-            var (row, col) = getRowColOfCursor()
-            var previous = getCharAt(cursor)
+            var row = getRowOfCursor()
+            var col = getColOfCursor()
+            var previous = if (cursor == length) null else getCharAt(cursor)
             (1 .. coercedDelta).forEach {
                 if (previous == '\n') {
                     row++
@@ -54,15 +63,17 @@ interface Editor {
                 else {
                     col++
                 }
-                previous = getCharAt(cursor + it)
+                if (it != coercedDelta) previous = getCharAt(cursor + it)
             }
-            cursorRowCol = RowCol(row, col)
+            cursorRow = row
+            cursorCol = col
             cursor += coercedDelta
             selection = null
         }
         else if (delta < 0) {
             val coercedDelta = (-delta).coerceAtMost(cursor)
-            var (row, col) = getRowColOfCursor()
+            var row = getRowOfCursor()
+            var col = getColOfCursor()
             (1 ..  coercedDelta).forEach {
                 val previous = getCharAt(cursor - it)
                 if (previous == '\n') {
@@ -73,7 +84,8 @@ interface Editor {
                     col--
                 }
             }
-            cursorRowCol = RowCol(row, col)
+            cursorRow = row
+            cursorCol = col
             cursor -= coercedDelta
             selection = null
         }
@@ -81,27 +93,28 @@ interface Editor {
     }
 
     fun moveBy(rowColDelta: RowCol): Int {
-        val (row, col) = getRowColOfCursor()
-        val nextRow = row + rowColDelta.row
+        val nextRow = getRowOfCursor() + rowColDelta.row
         if (nextRow < 0) {
-            moveTo(0)
             cursor = 0
             selection = null
-            cursorRowCol = RowCol(0, 0)
+            cursorRow = 0
+            cursorCol = 0
         }
         else if (nextRow >= rowCount) {
             cursor = length
             selection = null
-            cursorRowCol = null
+            cursorRow = null
+            cursorCol = null
         }
         else {
             val rowRange = getRangeOfRow(nextRow)
             val rowCount = rowRange.run { last - first }
-            val nextCol = (col + rowColDelta.col).coerceIn(0, rowCount)
+            val nextCol = (getColOfCursor() + rowColDelta.col).coerceIn(0, rowCount)
             val nextCursor = rowRange.first + nextCol
             cursor = nextCursor
             selection = null
-            cursorRowCol = RowCol(nextRow, nextCol)
+            cursorRow = nextRow
+            cursorCol = nextCol
         }
         return cursor
     }
@@ -184,7 +197,7 @@ interface Editor {
      * Returns a new String that contains characters in this Editor
      * at the range of [range].
      */
-    fun getSubstring(range: IntRange) =
+    fun getSubstring(range: IntRange): String =
         getSubstring(range.first, range.last + 1)
 
     /**
@@ -193,32 +206,19 @@ interface Editor {
      */
     fun getRangeOfRow(row: Int): IntRange
 
-    fun getPositionOf(rowCol: RowCol): Int {
-        val lastRow = getLastRow()
-        val coercedRow = rowCol.row.coerceIn(0, lastRow)
-        val rowRange = getRangeOfRow(coercedRow)
-        return when(coercedRow) {
-            lastRow -> rowRange.first + rowCol.col.coerceIn(0 until rowRange.count() + 1)
-            else -> rowRange.first + rowCol.col.coerceIn(0 until rowRange.count())
-        }
-    }
-
-    fun getLastRow() = (rowCount - 1).coerceAtLeast(0)
+    fun getLastRow(): Int = (rowCount - 1).coerceAtLeast(0)
 
     fun getRowOf(position: Int): Int
 
-    fun getRowColOf(position: Int): RowCol {
-        // Special case for cursor
-        if (position == cursor) cursorRowCol?.let { return it }
-
-        val row = getRowOf(position)
+    private fun calculateCursorCol(): Int {
+        val row = cursorRow ?: getRowOf(cursor).also { cursorRow = it }
         val rangeOfRow = getRangeOfRow(row)
-        val col = position - rangeOfRow.first
-
-        return RowCol(row, col)
-            // Special case for cursor
-            .also { if (position == cursor) cursorRowCol = it }
+        return (cursor - rangeOfRow.first).also { cursorCol = it }
     }
 
-    fun getRowColOfCursor() = getRowColOf(cursor)
+    fun getRowOfCursor(): Int =
+        cursorRow ?: getRowOf(cursor).also { cursorRow = it }
+
+    fun getColOfCursor(): Int =
+        cursorCol ?: calculateCursorCol()
 }

@@ -138,25 +138,6 @@ internal class EditorTest {
     }
 
     @Test
-    fun getPositionOf() {
-        editor.run {
-            insert("hello\nworld\nline3\nline4")
-            getPositionOf(RowCol(1, 2)) shouldEqual 8
-            getPositionOf(RowCol(2, 3)) shouldEqual 15
-            getPositionOf(RowCol(3, 4)) shouldEqual 22
-
-            // Beyond the end of a row, should position to the last character in the row
-            getPositionOf(RowCol(0, 100)) shouldEqual 5
-
-            // Special case: beyond the last row, should move to the last character
-            getPositionOf(RowCol(100, 0)) shouldEqual 18
-
-            // Special case: beyond the last row, and beyond the end of the line, move to END
-            getPositionOf(RowCol(100, 100)) shouldEqual 23
-        }
-    }
-
-    @Test
     fun getSubstring() {
         editor.run {
             insert("hello\nworld\nline3\nline4")
@@ -237,22 +218,6 @@ internal class EditorTest {
             insert("\n")
             getRowOf(11) shouldEqual 2
             getRowOf(12) shouldEqual 3
-        }
-    }
-
-    @Test
-    fun getRowColOf() {
-        editor.run {
-            getRowColOf(0) shouldEqual RowCol(0, 0)
-            insert("hello\nworld\nline3\nline4")
-            getRowColOf(0) shouldEqual RowCol(0, 0)
-            getRowColOf(5) shouldEqual RowCol(0, 5)
-            getRowColOf(6) shouldEqual RowCol(1, 0)
-            getRowColOf(15) shouldEqual RowCol(2, 3)
-            getRowColOf(22) shouldEqual RowCol(3, 4)
-            insert("\n")
-            getRowColOf(23) shouldEqual RowCol(3, 5)
-            getRowColOf(24) shouldEqual RowCol(4, 0)
         }
     }
 
@@ -403,28 +368,39 @@ internal class EditorTest {
 
             moveTo(0)
             cursor shouldEqual 0
-            getRowColOfCursor() shouldEqual RowCol(0, 0)
-            cursorRowCol shouldEqual RowCol(0, 0)
+            getRowOfCursor() shouldEqual 0
+            getColOfCursor() shouldEqual 0
 
             moveBy(1)
             cursor shouldEqual 1
-            cursorRowCol shouldEqual RowCol(0, 1)
+            getRowOfCursor() shouldEqual 0
+            getColOfCursor() shouldEqual 1
 
             moveBy(10) shouldEqual 11
             cursor shouldEqual 11
-            cursorRowCol shouldEqual RowCol(0, 11)
+            getRowOfCursor() shouldEqual 0
+            getColOfCursor() shouldEqual 11
 
-            moveBy(2)
-            cursor shouldEqual 13
-            cursorRowCol shouldEqual RowCol(1, 1)
+            moveBy(13) shouldEqual 24
+            cursor shouldEqual 24
+            getRowOfCursor() shouldEqual 2
+            getColOfCursor() shouldEqual 5
 
-            moveBy(-2)
+            // Special case: last character
+            moveBy(1) shouldEqual 25
+            cursor shouldEqual 25
+            getRowOfCursor() shouldEqual 2
+            getColOfCursor() shouldEqual 6
+
+            moveBy(-14)
             cursor shouldEqual 11
-            cursorRowCol shouldEqual RowCol(0, 11)
+            getRowOfCursor() shouldEqual 0
+            getColOfCursor() shouldEqual 11
 
             moveBy(-10)
             cursor shouldEqual 1
-            cursorRowCol shouldEqual RowCol(0, 1)
+            getRowOfCursor() shouldEqual 0
+            getColOfCursor() shouldEqual 1
         }
     }
 
@@ -436,27 +412,30 @@ internal class EditorTest {
 
             moveTo(0)
             cursor shouldEqual 0
-            getRowColOfCursor() shouldEqual RowCol(0, 0)
-            cursorRowCol shouldEqual RowCol(0, 0)
+            getRowOfCursor() shouldEqual 0
+            getColOfCursor() shouldEqual 0
 
             moveBy(RowCol(1, 0))
             cursor shouldEqual 12
-            getRowColOfCursor() shouldEqual RowCol(1, 0)
-            cursorRowCol shouldEqual RowCol(1, 0)
+            getRowOfCursor() shouldEqual 1
+            getColOfCursor() shouldEqual 0
 
             moveTo(0)
             moveBy(RowCol(0, 100))
             cursor shouldEqual 11
-            cursorRowCol shouldEqual RowCol(0, 11)
+            getRowOfCursor() shouldEqual 0
+            getColOfCursor() shouldEqual 11
 
             moveTo(0)
             moveBy(RowCol(2, 1))
             cursor shouldEqual 20
-            cursorRowCol shouldEqual RowCol(2, 1)
+            getRowOfCursor() shouldEqual 2
+            getColOfCursor() shouldEqual 1
 
             moveBy(RowCol(-1, 2))
             cursor shouldEqual 15
-            cursorRowCol shouldEqual RowCol(1, 3)
+            getRowOfCursor() shouldEqual 1
+            getColOfCursor() shouldEqual 3
         }
     }
 

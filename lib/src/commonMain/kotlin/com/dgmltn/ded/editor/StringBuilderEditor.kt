@@ -7,7 +7,9 @@ class StringBuilderEditor(initialValue: String? = null): Editor {
 
     override var cursor = 0
 
-    override var cursorRowCol: RowCol? = null
+    override var cursorRow: Int? = 0
+
+    override var cursorCol: Int? = 0
 
     override var selection: IntProgression? = null
 
