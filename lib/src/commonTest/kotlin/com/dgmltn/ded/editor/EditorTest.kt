@@ -1,5 +1,6 @@
 package com.dgmltn.ded.editor
 
+import androidx.compose.runtime.TestOnly
 import kotlin.test.assertEquals
 import kotlin.test.BeforeTest
 import kotlin.test.AfterTest
@@ -391,6 +392,71 @@ internal class EditorTest {
             selection shouldEqual null
             insert("[]")
             value shouldEqual "![]world"
+        }
+    }
+
+    @Test
+    fun moveByInt() {
+        editor.run {
+            insert("hello world\nline 2\nline 3")
+            cursor shouldEqual 25
+
+            moveTo(0)
+            cursor shouldEqual 0
+            getRowColOfCursor() shouldEqual RowCol(0, 0)
+            cursorRowCol shouldEqual RowCol(0, 0)
+
+            moveBy(1)
+            cursor shouldEqual 1
+            cursorRowCol shouldEqual RowCol(0, 1)
+
+            moveBy(10) shouldEqual 11
+            cursor shouldEqual 11
+            cursorRowCol shouldEqual RowCol(0, 11)
+
+            moveBy(2)
+            cursor shouldEqual 13
+            cursorRowCol shouldEqual RowCol(1, 1)
+
+            moveBy(-2)
+            cursor shouldEqual 11
+            cursorRowCol shouldEqual RowCol(0, 11)
+
+            moveBy(-10)
+            cursor shouldEqual 1
+            cursorRowCol shouldEqual RowCol(0, 1)
+        }
+    }
+
+    @Test
+    fun moveByRowCol() {
+        editor.run {
+            insert("hello world\nline 2\nline 3")
+            cursor shouldEqual 25
+
+            moveTo(0)
+            cursor shouldEqual 0
+            getRowColOfCursor() shouldEqual RowCol(0, 0)
+            cursorRowCol shouldEqual RowCol(0, 0)
+
+            moveBy(RowCol(1, 0))
+            cursor shouldEqual 12
+            getRowColOfCursor() shouldEqual RowCol(1, 0)
+            cursorRowCol shouldEqual RowCol(1, 0)
+
+            moveTo(0)
+            moveBy(RowCol(0, 100))
+            cursor shouldEqual 11
+            cursorRowCol shouldEqual RowCol(0, 11)
+
+            moveTo(0)
+            moveBy(RowCol(2, 1))
+            cursor shouldEqual 20
+            cursorRowCol shouldEqual RowCol(2, 1)
+
+            moveBy(RowCol(-1, 2))
+            cursor shouldEqual 15
+            cursorRowCol shouldEqual RowCol(1, 3)
         }
     }
 
