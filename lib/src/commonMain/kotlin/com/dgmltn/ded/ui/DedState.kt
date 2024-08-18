@@ -86,10 +86,9 @@ class DedState(
 
     fun moveTo(rowCol: RowCol) = (editor.moveTo(rowCol) > -1).also { syncWithEditor() }
 
-    fun selectTokenAt(rowCol: RowCol) {
-        editor.moveTo(rowCol)
-        val range = editor.getRangeOfToken(editor.cursor)
-        editor.moveBy(range.last - editor.cursor)
+    fun selectTokenAtCursor() {
+        val range = editor.getRangeOfToken(cursor)
+        editor.moveBy(range.last - cursor)
         editor.select(range)
         syncWithEditor()
     }

@@ -51,7 +51,8 @@ private fun Modifier.detectTapGestures(
             onLongPress = { offset ->
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 val cellOffset = dedState.getCellAt(offset)
-                dedState.selectTokenAt(cellOffset)
+                dedState.moveTo(cellOffset)
+                dedState.selectTokenAtCursor()
             },
             onTap = { offset ->
                 dedState.inputSession?.showSoftwareKeyboard()

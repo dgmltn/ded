@@ -6,8 +6,13 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import com.dgmltn.ded.editor.RowCol
 
 @Composable
 actual fun Modifier.dedGestureModifier(
@@ -41,19 +46,26 @@ private fun Modifier.detectScrollGestures(
 @Composable
 private fun Modifier.detectTapGestures(
     dedState: DedState,
-) = this
-    .pointerInput(Unit) {
-        detectTapGestures(
-            onDoubleTap = { offset ->
-                val cellOffset = dedState.getCellAt(offset)
-                dedState.selectTokenAt(cellOffset)
-            },
-            onTap =  { offset ->
-                val cellOffset = dedState.getCellAt(offset)
-                dedState.moveTo(cellOffset)
-            },
-        )
-    }
+): Modifier {
+    var lastClick: Pair<Long, RowCol>? by remember { mutableStateOf(null) }
+    return this
+        .pointerInput(Unit) {
+            detectTapGestures(
+                onTap = { offset ->
+                    val now = System.currentTimeMillis()
+                    val cellOffset = dedState.getCellAt(offset)
+                    dedState.moveTo(cellOffset)
+                    lastClick?.run {
+                        if (now - first < viewConfiguration.doubleTapTimeoutMillis && cellOffset == second) {
+                            // double-click on the same cell
+                            dedState.selectTokenAtCursor()
+                        }
+                    }
+                    lastClick = now to cellOffset
+                },
+            )
+        }
+}
 
 @Composable
 private fun Modifier.detectSelectGestures(
