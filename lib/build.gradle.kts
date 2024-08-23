@@ -80,6 +80,9 @@ kotlin {
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
             implementation(libs.kermit)
+
+            implementation("org.codroid:codroid-textmate:1.0.2")
+            implementation("org.codroid:oniguruma-lib:1.0.2")
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)

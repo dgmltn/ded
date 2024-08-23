@@ -12,14 +12,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
-import com.dgmltn.ded.theme.DedColors
+import com.dgmltn.ded.parser.ThemeType
 
 val END = Char(0)
 const val NEWLINE = '\n'
 
 interface DedScope {
     val cellSize: IntSize
-    val colors: DedColors
+    val theme: ThemeType
     val lineNumberLength: Int
 
     @Composable
@@ -33,7 +33,7 @@ interface DedScope {
     @Composable
     fun LineNumberGlyphs(row: Int) {
         // row+1 here because humans are used to 1-based line numbers
-        CellGlyphs(row, 0, (row + 1).toString(), colors.lineNumber)
+        CellGlyphs(row, 0, (row + 1).toString(), theme.guide)
     }
 
     @Composable
@@ -124,15 +124,15 @@ interface DedScope {
                     row = row,
                     col = col,
                     glyph = c,
-                    fgColor = colors.literal,
-                    bgColor = colors.cursor,
+                    fgColor = colorizer(i) ?: theme.defaultFg,
+                    bgColor = theme.cursor,
                 )
             }
             else if (selection?.contains(i) == true) {
-                BodyGlyph(row, col, c, colors.selectionFg, colors.selectionBg)
+                BodyGlyph(row, col, c, colorizer(i) ?: theme.defaultFg, theme.selection)
             }
             else {
-                BodyGlyph(row, col, c, colorizer(i) ?: colors.literal, null)
+                BodyGlyph(row, col, c, colorizer(i) ?: theme.defaultFg, null)
             }
 
 

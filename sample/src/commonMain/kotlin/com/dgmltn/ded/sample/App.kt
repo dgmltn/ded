@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dgmltn.ded.editor.LoggingEditor
 import com.dgmltn.ded.editor.StringBuilderEditor
+import com.dgmltn.ded.parser.ThemeType
 import com.dgmltn.ded.ui.Ded
 import com.dgmltn.ded.ui.rememberDedState
 import ded.sample.generated.resources.Res
@@ -42,13 +43,20 @@ fun App(modifier: Modifier = Modifier) {
             """.trimIndent(),
         ))
     }
-    val state = rememberDedState(editor = editor)
+    val state = rememberDedState(
+        editor = editor,
+        theme = ThemeType.MadeOfCode,
+    )
 
     LaunchedEffect(editor) {
         while(true) {
             delay(10.seconds)
             editor.printStats()
         }
+    }
+
+    LaunchedEffect(state.value) {
+        state.syncColors()
     }
 
     val textStyle = TextStyle(

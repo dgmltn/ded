@@ -22,14 +22,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import co.touchlab.kermit.Logger
-import com.dgmltn.ded.theme.DedColors
-import com.dgmltn.ded.theme.DedDefaults
+import com.dgmltn.ded.parser.ThemeType
 
 @Composable
 fun Ded(
     modifier: Modifier = Modifier,
     state: DedState = rememberDedState(),
-    colors: DedColors = DedDefaults.colors,
     textStyle: TextStyle = LocalTextStyle.current,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
@@ -82,7 +80,7 @@ fun Ded(
 
     Box(
         modifier = modifier
-            .background(colors.canvas)
+            .background(state.theme.defaultBg)
             .clipToBounds()
             .padding(5.dp)
             .then(focusModifier)
@@ -94,7 +92,6 @@ fun Ded(
             state = state,
             modifier = Modifier.fillMaxSize(),
             textStyle = textStyle,
-            colors = colors
         )
     }
 }

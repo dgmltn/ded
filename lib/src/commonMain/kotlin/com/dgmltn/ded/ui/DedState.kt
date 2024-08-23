@@ -17,31 +17,32 @@ import androidx.compose.ui.unit.IntSize
 import com.dgmltn.ded.editor.Editor
 import com.dgmltn.ded.editor.RowCol
 import com.dgmltn.ded.editor.StringBuilderEditor
-import com.dgmltn.ded.editor.language.JavascriptLanguageConfig
-import com.dgmltn.ded.editor.language.LanguageConfig
-import com.dgmltn.ded.theme.DedColors
-import com.dgmltn.ded.theme.DedDefaults
+import com.dgmltn.ded.parser.LanguageType
+import com.dgmltn.ded.parser.Parser
+import com.dgmltn.ded.parser.ThemeType
 import com.dgmltn.ded.toIntRange
 
 @Composable
 fun rememberDedState(
     initialValue: String = "",
     editor: Editor = StringBuilderEditor(initialValue),
-    colors: DedColors = DedDefaults.colors,
-    languageConfig: LanguageConfig = JavascriptLanguageConfig(),
+    theme: ThemeType = ThemeType.Bespin,
+    language: LanguageType = LanguageType.Javascript,
+    tabSize: Int = 2,
     clipboardManager: ClipboardManager = LocalClipboardManager.current,
 ): DedState {
     return remember {
-        DedState(initialValue, clipboardManager, colors, editor, languageConfig)
+        DedState(initialValue, editor, theme, language, tabSize, clipboardManager)
     }
 }
 
 class DedState(
     initialValue: String? = null,
-    private val clipboardManager: ClipboardManager,
-    private val colors: DedColors = DedDefaults.colors,
     private val editor: Editor = StringBuilderEditor(initialValue),
-    private val languageConfig: LanguageConfig = JavascriptLanguageConfig(),
+    val theme: ThemeType = ThemeType.Bespin,
+    val language: LanguageType = LanguageType.Javascript,
+    val tabSize: Int = 2,
+    private val clipboardManager: ClipboardManager,
 ) {
     // The full text of the editor. This should be optimized but for now it's needed
     // to build highlights.
@@ -68,14 +69,18 @@ class DedState(
     var maxWindowYScrollPx by mutableIntStateOf(0)
     var windowYScrollPx by mutableFloatStateOf(0f)
 
-    // Calculated by the highlighter library
-//    private var highlights by mutableStateOf(emptyList<CodeHighlight>())
-
     // Related to the software keyboard
     var inputSession: TextInputSession? = null
 
+    // Parser for syntax highlighting
+    val parser = Parser(language, theme)
+
     init {
         syncWithEditor()
+    }
+
+    suspend fun syncColors() {
+        parser.parse(listOf(value))
     }
 
     fun moveBy(rowCol: RowCol) = (editor.moveBy(rowCol) > -1).also { syncWithEditor() }
@@ -102,16 +107,24 @@ class DedState(
     fun insert(value: String) = editor.insert(value).also { syncWithEditor() }
 
     fun tab(): Boolean {
-        val tabSize = languageConfig.tabSize
+        val tabSize = tabSize
         val col = editor.getColOfCursor()
         val numOfSpaces = tabSize - (col % tabSize)
         return insert(" ".repeat(numOfSpaces))
     }
 
+        /**
+     * Returns true if the delete was successful.
+     */
+
     /**
      * Returns true if the delete was successful.
      */
     fun delete() = (editor.delete(1) == 1).also { syncWithEditor() }
+
+        /**
+     * Returns true if the selection was deleted. Cursor will be at the beginning of the selection.
+     */
 
     /**
      * Returns true if the selection was deleted. Cursor will be at the beginning of the selection.
@@ -121,6 +134,10 @@ class DedState(
             editor.moveTo(first)
             editor.delete(count()) == count()
         }.also { syncWithEditor() }
+
+        /**
+     * Returns true if the backspace was successful.
+     */
 
     /**
      * Returns true if the backspace was successful.
@@ -162,9 +179,8 @@ class DedState(
             col = (offset.x / cellSizePx.width - lineNumberLength).toInt()
         )
 
-    private val colorCache = mutableMapOf<Int, Color>()
     fun getColorOf(position: Int): Color? =
-        null
+        parser.getColorOf(0, position)
 
     private fun syncWithEditor() {
         value = editor.value
@@ -192,6 +208,15 @@ class DedState(
         }
     }
 
+                /**
+     * Returns the position of the first non-whitespace character on the
+     * current line.
+     *
+     * Special handling for moving to the beginning of the line: If the
+     * cursor is already at the first non-whitespace character, it will
+     * return the beginning of the line instead.
+     */
+
     /**
      * Returns the position of the first non-whitespace character on the
      * current line.
@@ -206,6 +231,14 @@ class DedState(
         val pos = rangeOfRow.first + if (editor.getColOfCursor() == indent) 0 else indent
         return pos
     }
+
+                /**
+     * Returns the position of the end of the current line.
+     *
+     * Special handling for the last line of the file: If the cursor is
+     * on the last line of the file, will return [length] instead of to the last
+     * character of the line.
+     */
 
     /**
      * Returns the position of the end of the current line.
