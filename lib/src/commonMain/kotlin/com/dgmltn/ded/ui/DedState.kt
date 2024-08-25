@@ -19,6 +19,7 @@ import com.dgmltn.ded.editor.RowCol
 import com.dgmltn.ded.editor.StringBuilderEditor
 import com.dgmltn.ded.parser.LanguageType
 import com.dgmltn.ded.parser.Parser
+import com.dgmltn.ded.parser.TextMateParser
 import com.dgmltn.ded.parser.ThemeType
 import com.dgmltn.ded.toIntRange
 
@@ -26,21 +27,19 @@ import com.dgmltn.ded.toIntRange
 fun rememberDedState(
     initialValue: String = "",
     editor: Editor = StringBuilderEditor(initialValue),
-    theme: ThemeType = ThemeType.Bespin,
-    language: LanguageType = LanguageType.Javascript,
+    parser: Parser = TextMateParser(LanguageType.Javascript, ThemeType.Bespin),
     tabSize: Int = 2,
     clipboardManager: ClipboardManager = LocalClipboardManager.current,
 ): DedState {
     return remember {
-        DedState(initialValue, editor, theme, language, tabSize, clipboardManager)
+        DedState(initialValue, editor, parser, tabSize, clipboardManager)
     }
 }
 
 class DedState(
     initialValue: String? = null,
     private val editor: Editor = StringBuilderEditor(initialValue),
-    val theme: ThemeType = ThemeType.Bespin,
-    val language: LanguageType = LanguageType.Javascript,
+    val parser: Parser = TextMateParser(LanguageType.Javascript, ThemeType.Bespin),
     val tabSize: Int = 2,
     private val clipboardManager: ClipboardManager,
 ) {
@@ -71,9 +70,6 @@ class DedState(
 
     // Related to the software keyboard
     var inputSession: TextInputSession? = null
-
-    // Parser for syntax highlighting
-    val parser = Parser(language, theme)
 
     init {
         syncWithEditor()

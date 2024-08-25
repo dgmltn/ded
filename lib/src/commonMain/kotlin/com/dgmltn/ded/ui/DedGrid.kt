@@ -42,7 +42,7 @@ fun DedGrid(
                 get() = state.cellSizePx
 
             override val theme
-                get() = state.theme
+                get() = state.parser.theme
 
             override val lineNumberLength: Int
                 get() = state.lineNumberLength

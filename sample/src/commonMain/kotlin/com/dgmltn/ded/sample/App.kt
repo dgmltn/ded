@@ -17,6 +17,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dgmltn.ded.editor.LoggingEditor
 import com.dgmltn.ded.editor.StringBuilderEditor
+import com.dgmltn.ded.parser.LanguageType
+import com.dgmltn.ded.parser.TextMateParser
 import com.dgmltn.ded.parser.ThemeType
 import com.dgmltn.ded.ui.Ded
 import com.dgmltn.ded.ui.rememberDedState
@@ -45,7 +47,7 @@ fun App(modifier: Modifier = Modifier) {
     }
     val state = rememberDedState(
         editor = editor,
-        theme = ThemeType.MadeOfCode,
+        parser = TextMateParser(LanguageType.Javascript, ThemeType.MadeOfCode)
     )
 
     LaunchedEffect(editor) {

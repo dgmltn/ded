@@ -80,7 +80,7 @@ fun Ded(
 
     Box(
         modifier = modifier
-            .background(state.theme.defaultBg)
+            .background(state.parser.theme.defaultBg)
             .clipToBounds()
             .padding(5.dp)
             .then(focusModifier)
