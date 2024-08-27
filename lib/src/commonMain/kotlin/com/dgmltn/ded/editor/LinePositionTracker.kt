@@ -30,7 +30,7 @@ class LinePositionTracker(private val text: StringBuilder) {
     }
 
     fun getRowOf(position: Int): Int {
-        require(position >= 0 && position <= text.length) { "Position out of bounds" }
+        require(position >= 0 && position <= text.length) { "Position ($position) out of bounds [0, ${text.length}]" }
 
         if (position == 0) return 0
         if (rowCount == 1) return 0

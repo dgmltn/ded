@@ -28,21 +28,31 @@ interface Editor {
      */
     fun moveTo(position: Int): Int {
         cursor = position.coerceIn(0, length)
-        cursorRow = null
-        cursorCol = null
+        // Special case
+        if (length == 0) {
+            cursorRow = 0
+            cursorCol = 0
+        }
+        else {
+            cursorRow = null
+            cursorCol = null
+        }
         selection = null
         return cursor
     }
 
     fun moveTo(rowCol: RowCol): Int {
+        // Special case
+        if (length == 0 || rowCol.row < 0) return moveTo(0)
+
         val lastRow = getLastRow()
         val nextRow = rowCol.row.coerceIn(0, lastRow)
         val rowRange = getRangeOfRow(nextRow)
-        val nextCol = when(nextRow) {
-            lastRow -> rowCol.col.coerceIn(0 .. rowRange.count())
-            else -> rowCol.col.coerceIn(0 until rowRange.count())
-        }
-        cursor = rowRange.first + nextCol
+        val nextCol =
+            if (rowCol.row > lastRow) rowRange.count() // Special case when move beyond the last line
+            else if (rowCol.row == lastRow) rowCol.col.coerceIn(0 .. rowRange.count())
+            else rowCol.col.coerceIn(0 until rowRange.count())
+        cursor = (rowRange.first + nextCol).coerceIn(0, length)
         cursorRow = nextRow
         cursorCol = nextCol
         selection = null
@@ -50,6 +60,7 @@ interface Editor {
     }
 
     fun moveBy(delta: Int): Int {
+        if (length == 0) return 0
         if (delta > 0) {
             val coercedDelta = delta.coerceAtMost(length - cursor)
             var row = getRowOfCursor()
@@ -92,32 +103,11 @@ interface Editor {
         return cursor
     }
 
-    fun moveBy(rowColDelta: RowCol): Int {
-        val nextRow = getRowOfCursor() + rowColDelta.row
-        if (nextRow < 0) {
-            cursor = 0
-            selection = null
-            cursorRow = 0
-            cursorCol = 0
-        }
-        else if (nextRow >= rowCount) {
-            cursor = length
-            selection = null
-            cursorRow = null
-            cursorCol = null
-        }
-        else {
-            val rowRange = getRangeOfRow(nextRow)
-            val rowCount = rowRange.run { last - first }
-            val nextCol = (getColOfCursor() + rowColDelta.col).coerceIn(0, rowCount)
-            val nextCursor = rowRange.first + nextCol
-            cursor = nextCursor
-            selection = null
-            cursorRow = nextRow
-            cursorCol = nextCol
-        }
-        return cursor
-    }
+    fun moveBy(rowColDelta: RowCol): Int =
+        moveTo(RowCol(
+            row = getRowOfCursor() + rowColDelta.row,
+            col = getColOfCursor() + rowColDelta.col,
+        ))
 
     fun select(range: IntProgression) {
         selection = range

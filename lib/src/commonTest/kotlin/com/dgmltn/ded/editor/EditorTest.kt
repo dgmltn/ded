@@ -122,6 +122,8 @@ internal class EditorTest {
         editor.run {
             cursor shouldEqual 0
             length shouldEqual 0
+            moveTo(1)
+            cursor shouldEqual 0
             moveTo(5)
             cursor shouldEqual 0
             moveTo(-1)
@@ -285,11 +287,15 @@ internal class EditorTest {
             cursor shouldEqual 5
             backspace(1) shouldEqual 1
             value shouldEqual "hell"
+            cursor shouldEqual 4
             backspace(1) shouldEqual 1
             value shouldEqual "hel"
+            cursor shouldEqual 3
             backspace(3) shouldEqual 3
             value shouldEqual ""
+            cursor shouldEqual 0
             backspace(5) shouldEqual 0
+            cursor shouldEqual 0
         }
     }
 
@@ -331,12 +337,16 @@ internal class EditorTest {
     fun empty_value() {
         editor.run {
             value shouldEqual ""
+            cursor shouldEqual 0
             insert("test")
             value shouldEqual "test"
+            cursor shouldEqual 4
             undo()
             value shouldEqual ""
+            cursor shouldEqual 0
             undo()
             value shouldEqual ""
+            cursor shouldEqual 0
         }
     }
 
@@ -363,6 +373,12 @@ internal class EditorTest {
     @Test
     fun moveByInt() {
         editor.run {
+            cursor shouldEqual 0
+            moveBy(10) shouldEqual 0
+            cursor shouldEqual 0
+            moveBy(-10) shouldEqual 0
+            cursor shouldEqual 0
+
             insert("hello world\nline 2\nline 3")
             cursor shouldEqual 25
 
@@ -407,6 +423,12 @@ internal class EditorTest {
     @Test
     fun moveByRowCol() {
         editor.run {
+            cursor shouldEqual 0
+            moveBy(RowCol(1, 0)) shouldEqual 0
+            moveBy(RowCol(-1, 0)) shouldEqual 0
+            moveBy(RowCol(0, 1)) shouldEqual 0
+            moveBy(RowCol(0, -1)) shouldEqual 0
+
             insert("hello world\nline 2\nline 3")
             cursor shouldEqual 25
 
@@ -436,6 +458,30 @@ internal class EditorTest {
             cursor shouldEqual 15
             getRowOfCursor() shouldEqual 1
             getColOfCursor() shouldEqual 3
+        }
+    }
+
+    @Test
+    fun moveToRowCol() {
+        editor.run {
+            cursor shouldEqual 0
+            moveTo(RowCol(10, 10)) shouldEqual 0
+            cursor shouldEqual 0
+
+            insert("hello world\nline 2\nline 3")
+            cursor shouldEqual 25
+
+            moveTo(RowCol(0, 0))
+            cursor shouldEqual 0
+            getRowOfCursor() shouldEqual 0
+            getColOfCursor() shouldEqual 0
+
+            moveTo(RowCol(2, 2)) shouldEqual 21
+
+            // Special case
+            moveTo(RowCol(10, 0)) shouldEqual 25
+            moveTo(RowCol(-1, 10)) shouldEqual 0
+            moveTo(RowCol(2, 20)) shouldEqual 25
         }
     }
 
