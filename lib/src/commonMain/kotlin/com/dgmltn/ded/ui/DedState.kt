@@ -50,6 +50,9 @@ class DedState(
     // The current cursor position of the editor
     var cursor by mutableStateOf(editor.cursor)
 
+    // Whether this Ded is focused
+    var hasFocus by mutableStateOf(false)
+
     // The current selection range of the editor
     var selection by mutableStateOf(editor.selection)
 

@@ -1,9 +1,13 @@
 package com.dgmltn.ded.sample
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -68,19 +72,25 @@ fun App(modifier: Modifier = Modifier) {
         fontSize = 18.sp
     )
 
-    Box(modifier = modifier.fillMaxSize().padding(24.dp)) {
+    Column(modifier = modifier.fillMaxSize().padding(24.dp)) {
         Ded(
             modifier = Modifier
-                .fillMaxSize(),
+                .fillMaxWidth()
+                .weight(1f),
             state = state,
             textStyle = textStyle,
         )
 
-        Text(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(5.dp),
-            text = state.cursor.toString(),
-        )
+        Row {
+            TextButton(onClick = {state.undo()}) { Text("Undo") }
+            TextButton(onClick = {state.redo()}) { Text("Redo") }
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                modifier = Modifier
+                    .align(Alignment.CenterVertically)
+                    .padding(5.dp),
+                text = state.cursor.toString(),
+            )
+        }
     }
 }

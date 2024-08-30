@@ -11,14 +11,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.pointer.pointerInput
 import com.dgmltn.ded.editor.RowCol
 
 @Composable
 actual fun Modifier.dedGestureModifier(
     dedState: DedState,
+    focusRequester: FocusRequester
 ) = this
-    .detectTapGestures(dedState)
+    .detectTapGestures(dedState, focusRequester)
     .detectSelectGestures(dedState)
     .detectScrollGestures(dedState)
 
@@ -46,12 +48,14 @@ private fun Modifier.detectScrollGestures(
 @Composable
 private fun Modifier.detectTapGestures(
     dedState: DedState,
+    focusRequester: FocusRequester
 ): Modifier {
     var lastClick: Pair<Long, RowCol>? by remember { mutableStateOf(null) }
     return this
         .pointerInput(Unit) {
             detectTapGestures(
                 onTap = { offset ->
+                    focusRequester.requestFocus()
                     val now = System.currentTimeMillis()
                     val cellOffset = dedState.getCellAt(offset)
                     dedState.moveTo(cellOffset)

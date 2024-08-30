@@ -7,6 +7,7 @@ import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -15,8 +16,9 @@ import co.touchlab.kermit.Logger
 @Composable
 actual fun Modifier.dedGestureModifier(
     dedState: DedState,
+    focusRequester: FocusRequester
 ) = this
-    .detectTapGestures(dedState)
+    .detectTapGestures(dedState, focusRequester)
     .detectScrollGestures(dedState)
 
 
@@ -44,17 +46,20 @@ private fun Modifier.detectScrollGestures(
 @Composable
 private fun Modifier.detectTapGestures(
     dedState: DedState,
+    focusRequester: FocusRequester
 ): Modifier {
     val haptic = LocalHapticFeedback.current
     return this.pointerInput(Unit) {
         detectTapGestures(
             onLongPress = { offset ->
+                focusRequester.requestFocus()
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 val cellOffset = dedState.getCellAt(offset)
                 dedState.moveTo(cellOffset)
                 dedState.selectTokenAtCursor()
             },
             onTap = { offset ->
+                focusRequester.requestFocus()
                 dedState.inputSession?.showSoftwareKeyboard()
                 val cellOffset = dedState.getCellAt(offset)
                 dedState.moveTo(cellOffset)

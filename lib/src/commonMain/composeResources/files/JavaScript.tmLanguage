@@ -585,7 +585,7 @@
                 ([\p{L}\p{Nl}$_][\p{L}\p{Nl}$\p{Mn}\p{Mc}\p{Nd}\p{Pc}\x{200C}\x{200D}]*)
                 \s*
                 (\()
-                (?=(?:[^\(\)]*)?\)\s*\{)
+                (?=(?:[^\(\)]*)\)\s*\{)
             </string>
 			<key>beginCaptures</key>
 			<dict>

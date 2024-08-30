@@ -24,4 +24,4 @@ fun Modifier.dedFocusModifier(
     .focusable(interactionSource = interactionSource, enabled = enabled)
 
 @Composable
-expect fun Modifier.dedGestureModifier(dedState: DedState): Modifier
+expect fun Modifier.dedGestureModifier(dedState: DedState, focusRequester: FocusRequester): Modifier

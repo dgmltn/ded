@@ -104,7 +104,7 @@ interface DedScope {
         length: Int,
         getCharAt: (Int) -> Char,
         colorizer: (Int) -> Color?,
-        cursor: Int,
+        cursor: Int?,
         selection: IntProgression?,
     ) {
         var row = 0

@@ -5,6 +5,6 @@ package com.dgmltn.ded.parser
 // https://github.com/textmate/javascript.tmbundle/
 
 enum class LanguageType(val resLocation: String, val initialScopeName: String) {
-    Kotlin("files/Kotlin.tmLanguage.json", "source.kotlin"),
+    Kotlin("files/Kotlin.tmLanguage", "source.kt"),
     Javascript("files/JavaScript.tmLanguage", "source.js")
 }

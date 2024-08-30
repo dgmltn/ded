@@ -12,7 +12,10 @@ import org.codroid.textmate.Tokenizer
 import org.codroid.textmate.parsePLIST
 import org.codroid.textmate.parseRawGrammar
 import org.codroid.textmate.theme.FontStyleConsts
+import org.codroid.textmate.theme.RawTheme
+import org.codroid.textmate.theme.RawThemeSetting
 import org.codroid.textmate.theme.ScopeStack
+import org.codroid.textmate.theme.Setting
 import org.codroid.textmate.theme.Theme
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 
@@ -36,7 +39,7 @@ class TextMateParser(
         }
     }
 
-    private suspend fun ensureTheme() {
+    private fun ensureTheme() {
         if (!::tmTheme.isInitialized) {
             tmTheme = loadTheme(theme)
 
@@ -110,7 +113,8 @@ class TextMateParser(
             loadGrammar = {
                 if (it == type.initialScopeName) {
                     // It only accepts json and plist file.
-                    return@RegistryOptions parseRawGrammar(bytes.inputStream(), type.resLocation)
+                    val rawGrammar = parseRawGrammar(bytes.inputStream(), type.resLocation)
+                    return@RegistryOptions rawGrammar
                 }
                 return@RegistryOptions null
             }
@@ -119,11 +123,15 @@ class TextMateParser(
     }
 
     @OptIn(ExperimentalResourceApi::class)
-    private suspend fun loadTheme(type: ThemeType): Theme {
-        val themeBytes = Res.readBytes(type.resLocation)
-        return Theme.createFromRawTheme(
-            source = parsePLIST(themeBytes.inputStream())
-        )
+    suspend fun printOutTheme(resLocation: String = "files/Bespin.tmTheme") {
+        val themeBytes = Res.readBytes(resLocation)
+        val rawTheme = parsePLIST<RawTheme>(themeBytes.inputStream())
+        println(rawTheme.toDsl())
+    }
+
+    @OptIn(ExperimentalResourceApi::class)
+    private fun loadTheme(type: ThemeType): Theme {
+        return Theme.createFromRawTheme(source = type.rawTheme)
     }
 
     private fun TokenizeLineResult.toColors(theme: Theme) =

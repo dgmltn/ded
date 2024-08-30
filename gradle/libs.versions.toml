@@ -25,6 +25,9 @@ androidx-espresso-core = "3.6.1"
 kermit = "2.0.2"
 jetbrainsKotlinJvm = "1.9.0"
 
+# https://github.com/haodong404/codroid-textmate/releases
+codroidTextmate = "1.0.2"
+
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -42,6 +45,9 @@ compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = 
 compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose" }
 
 kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
+
+codroid-textmate = { module = "org.codroid:codroid-textmate", version.ref = "codroidTextmate" }
+oniguruma-lib = { module = "org.codroid:oniguruma-lib", version.ref = "codroidTextmate" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
