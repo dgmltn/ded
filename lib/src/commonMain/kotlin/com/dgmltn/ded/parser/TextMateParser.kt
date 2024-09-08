@@ -18,6 +18,8 @@ import org.codroid.textmate.theme.ScopeStack
 import org.codroid.textmate.theme.Setting
 import org.codroid.textmate.theme.Theme
 import org.jetbrains.compose.resources.ExperimentalResourceApi
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 data class ColorizedRange(val range: IntRange, val color: Color?)
 
@@ -33,7 +35,7 @@ class TextMateParser(
     // The result of parse()
     private var parsedLines: List<TokenizeLineResult>? = null
 
-    private suspend fun ensureTokenizer() {
+    private fun ensureTokenizer() {
         if (!::tokenizer.isInitialized) {
             tokenizer = loadTokenizer(language)
         }
@@ -50,7 +52,7 @@ class TextMateParser(
         }
     }
 
-    override suspend fun parse(lines: List<String>) {
+    override fun parse(lines: List<String>) {
         ensureTokenizer()
         ensureTheme()
 
@@ -77,7 +79,7 @@ class TextMateParser(
 
     private fun Token.scopeStack() = ScopeStack.from(*scopes) //TODO: cache
 
-    suspend fun demo(lines: List<String>) {
+    fun demo(lines: List<String>) {
         ensureTokenizer()
         ensureTheme()
 
@@ -95,7 +97,7 @@ class TextMateParser(
             }
     }
 
-    suspend fun getColors(lines: List<String>): List<List<ColorizedRange>> {
+    fun getColors(lines: List<String>): List<List<ColorizedRange>> {
         ensureTokenizer()
         ensureTheme()
 
@@ -104,16 +106,16 @@ class TextMateParser(
             .map { it.toColors(tmTheme) }
     }
 
-    @OptIn(ExperimentalResourceApi::class)
-    private suspend fun loadTokenizer(type: LanguageType): Tokenizer {
+    @OptIn(ExperimentalEncodingApi::class)
+    private fun loadTokenizer(type: LanguageType): Tokenizer {
         // Create a registry that can create a grammar from a scope name.
-        val bytes = Res.readBytes(type.resLocation)
+        val bytes = Base64.decode(type.base64Theme) //Res.readBytes(type.resLocation)
         val registry = Registry(RegistryOptions(
             regexLib = OnigLib(), // You must add the oniguruma-lib dependency, or use StandardRegex()
             loadGrammar = {
                 if (it == type.initialScopeName) {
                     // It only accepts json and plist file.
-                    val rawGrammar = parseRawGrammar(bytes.inputStream(), type.resLocation)
+                    val rawGrammar = parseRawGrammar(bytes.inputStream(), type.initialScopeName)
                     return@RegistryOptions rawGrammar
                 }
                 return@RegistryOptions null
@@ -125,11 +127,11 @@ class TextMateParser(
     @OptIn(ExperimentalResourceApi::class)
     suspend fun printOutTheme(resLocation: String = "files/Bespin.tmTheme") {
         val themeBytes = Res.readBytes(resLocation)
+
         val rawTheme = parsePLIST<RawTheme>(themeBytes.inputStream())
         println(rawTheme.toDsl())
     }
 
-    @OptIn(ExperimentalResourceApi::class)
     private fun loadTheme(type: ThemeType): Theme {
         return Theme.createFromRawTheme(source = type.rawTheme)
     }

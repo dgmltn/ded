@@ -1,6 +1,5 @@
 package com.dgmltn.ded.parser
 
-import androidx.compose.runtime.sourceInformationMarkerEnd
 import androidx.compose.ui.graphics.Color
 import com.dgmltn.ded.hexToColor
 import org.codroid.textmate.theme.RawTheme
@@ -304,13 +303,6 @@ val bespin = theme {
         background = "#562D56BF"
     }
     setting {
-        name = "-----------------------------------"
-        scope = null
-        fontStyle = null
-        foreground = null
-        background = null
-    }
-    setting {
         name = "♦ Embedded Source"
         scope = arrayOf("text source")
         fontStyle = null
@@ -602,13 +594,6 @@ val madeOfCode = theme {
         background = "#562D56BF"
     }
     setting {
-        name = "-----------------------------------"
-        scope = null
-        fontStyle = null
-        foreground = null
-        background = null
-    }
-    setting {
         name = "♦ Embedded Source (Bright)"
         scope = arrayOf("text source")
         fontStyle = ""
@@ -817,13 +802,6 @@ val madeOfCode = theme {
         fontStyle = null
         foreground = "#F8F8F8"
         background = "#008A41"
-    }
-    setting {
-        name = "--------------------------------"
-        scope = null
-        fontStyle = null
-        foreground = null
-        background = null
     }
     setting {
         name = "Markup: Italic"

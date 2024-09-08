@@ -78,7 +78,7 @@ class DedState(
         syncWithEditor()
     }
 
-    suspend fun syncColors() {
+    fun syncColors() {
         parser.parse(listOf(value))
     }
 
@@ -183,6 +183,7 @@ class DedState(
 
     private fun syncWithEditor() {
         value = editor.value
+        syncColors()
         cursor = editor.cursor
         selection = editor.selection
         length = editor.length

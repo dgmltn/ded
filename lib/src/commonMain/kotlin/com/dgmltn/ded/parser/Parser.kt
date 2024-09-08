@@ -6,6 +6,6 @@ import androidx.compose.ui.graphics.Color
 interface Parser {
     val language: LanguageType
     val theme: ThemeType
-    suspend fun parse(lines: List<String>)
+    fun parse(lines: List<String>)
     fun getColorOf(lineIndex: Int, index: Int): Color?
 }

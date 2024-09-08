@@ -61,10 +61,6 @@ fun App(modifier: Modifier = Modifier) {
         }
     }
 
-    LaunchedEffect(state.value) {
-        state.syncColors()
-    }
-
     val textStyle = TextStyle(
         fontFamily = FontFamily(
             Font(Res.font.fira_code_regular, FontWeight.Normal, FontStyle.Normal)
