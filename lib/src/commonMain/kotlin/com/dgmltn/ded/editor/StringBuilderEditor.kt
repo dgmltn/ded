@@ -13,8 +13,15 @@ class StringBuilderEditor(initialValue: String? = null): Editor {
 
     override var selection: IntProgression? = null
 
+    private var _value: String? = null
+
     override val value: String
-        get() = builder.toString()
+        get() {
+            if (_value == null) {
+                _value = builder.toString()
+            }
+            return _value!!
+       }
 
     override val length: Int
         get() = builder.length
@@ -110,6 +117,7 @@ class StringBuilderEditor(initialValue: String? = null): Editor {
                 newlines.invalidateIndices(row)
                 newlines.addNewlines(edit.value.countNewlines())
                 moveTo(edit.position + edit.value.length)
+                _value = null
                 true
             }
             is Edit.Delete -> {
@@ -118,6 +126,7 @@ class StringBuilderEditor(initialValue: String? = null): Editor {
                 newlines.invalidateIndices(row)
                 newlines.addNewlines(-edit.value.countNewlines())
                 moveTo(edit.position)
+                _value = null
                 true
             }
             is Edit.Replace -> {
@@ -128,6 +137,7 @@ class StringBuilderEditor(initialValue: String? = null): Editor {
                 newlines.invalidateIndices(row)
                 newlines.addNewlines(edit.newValue.countNewlines() - edit.oldValue.countNewlines())
                 moveTo(edit.position + edit.newValue.length)
+                _value = null
                 true
             }
         }
