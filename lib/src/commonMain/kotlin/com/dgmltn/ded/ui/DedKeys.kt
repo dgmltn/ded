@@ -52,18 +52,6 @@ data class ModifiedKey(
     )
 }
 
-// Copy from https://github.com/JetBrains/kotlin/blob/7cd306950aad852e006715067435a4bbd9cd40d2/kotlin-native/runtime/src/main/kotlin/generated/_StringUppercase.kt#L26
-private const val MIN_SUPPLEMENTARY_CODE_POINT: Int = 0x10000
-private fun StringBuilder.appendCodePoint(codePoint: Int): StringBuilder {
-    if (codePoint < MIN_SUPPLEMENTARY_CODE_POINT) {
-        append(codePoint.toChar())
-    } else {
-        append(Char.MIN_HIGH_SURROGATE + ((codePoint - 0x10000) shr 10))
-        append(Char.MIN_LOW_SURROGATE + (codePoint and 0x3ff))
-    }
-    return this
-}
-
 private fun KeyEvent.consumeCodePoint(): String {
     return StringBuilder().appendCodePoint(utf16CodePoint).toString()
 }
