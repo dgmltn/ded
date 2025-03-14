@@ -45,6 +45,7 @@ kotlin {
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
             implementation(libs.kermit)
+            implementation(libs.composetexteditor)
 //            implementation(libs.highlights)
             implementation(project(":lib"))
         }

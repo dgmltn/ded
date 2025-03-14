@@ -23,6 +23,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.darkrockstudios.texteditor.TextEditor
+import com.darkrockstudios.texteditor.rememberTextEditorStyle
+import com.darkrockstudios.texteditor.state.SpanClickType
+import com.darkrockstudios.texteditor.state.TextEditorState
+import com.darkrockstudios.texteditor.state.rememberTextEditorState
 import com.dgmltn.ded.editor.LoggingEditor
 import com.dgmltn.ded.editor.StringBuilderEditor
 import com.dgmltn.ded.parser.LanguageType
@@ -37,46 +42,51 @@ import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import kotlin.time.Duration.Companion.seconds
 
+val SAMPLE = """ 
+    function hello() {
+      console.log("Hello, world!");
+      const x = 5;
+      var y = 10;
+      if (x == y) {
+        console.log("x equals y");
+      }
+    }
+""".trimIndent()
+
 @Composable
 @Preview
 fun App(modifier: Modifier = Modifier) {
-    val editor = remember {
-        LoggingEditor(StringBuilderEditor("""
-                function hello() {
-                  console.log("Hello, world!");
-                  const x = 5;
-                  var y = 10;
-                  if (x == y) {
-                    console.log("x equals y");
-                  }
-                }
-            """.trimIndent(),
-        ))
-    }
-    val state = rememberDedState(
-        editor = editor,
-        parser = TextMateParser(LanguageType.Javascript, ThemeType.MadeOfCode)
-    )
-
-    LaunchedEffect(editor) {
-        while(true) {
-            delay(10.seconds)
-            editor.printStats()
-        }
-    }
-
-    val textStyle = TextStyle(
-        fontFamily = FontFamily(
-            Font(Res.font.fira_code_regular, FontWeight.Normal, FontStyle.Normal)
-        ),
-        fontSize = 18.sp
-    )
+    val fontFamily = FontFamily(Font(Res.font.fira_code_regular, FontWeight.Normal, FontStyle.Normal))
+    val fontSize = 18.sp
 
     Column(modifier = modifier.fillMaxSize().padding(24.dp)) {
+
+        /////////////////// Ded ///////////////////
+
+        val editor = remember {
+            LoggingEditor(StringBuilderEditor(SAMPLE))
+        }
+        val state = rememberDedState(
+            editor = editor,
+            parser = TextMateParser(LanguageType.Javascript, ThemeType.MadeOfCode)
+        )
+
+        LaunchedEffect(editor) {
+            while(true) {
+                delay(10.seconds)
+                editor.printStats()
+            }
+        }
+
+        val textStyle = TextStyle(
+            fontFamily = fontFamily,
+            fontSize = fontSize,
+        )
+
         Ded(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f),
+                .weight(0.5f),
             state = state,
             textStyle = textStyle,
         )
@@ -92,5 +102,54 @@ fun App(modifier: Modifier = Modifier) {
                 text = state.cursor.toString(),
             )
         }
+
+        /////////////////// TextEditor ///////////////////
+
+        val spanStyle = SpanStyle(
+            fontFamily = fontFamily,
+            fontSize = fontSize,
+        )
+
+        val style = rememberTextEditorStyle(
+            placeholderText = "Enter text here",
+            textColor = MaterialTheme.colorScheme.onSurface,
+        )
+        val textEditorState: TextEditorState = rememberTextEditorState(
+            buildAnnotatedString {
+                withStyle(spanStyle) {
+                    append(SAMPLE)
+                }
+            }
+        )
+
+        TextEditor(
+            state = textEditorState,
+            modifier = Modifier
+                .padding(8.dp)
+                .weight(0.5f)
+                .fillMaxWidth(),
+            style = style,
+            onRichSpanClick = { span, clickType, _ ->
+                when (clickType) {
+                    SpanClickType.TAP -> println("Touch tap on span: $span")
+                    SpanClickType.PRIMARY_CLICK -> println("Left click on span: $span")
+                    SpanClickType.SECONDARY_CLICK -> println("Right click on span: $span")
+                }
+                true
+            }
+        )
+
+        Row {
+            TextButton(onClick = {textEditorState.undo()}) { Text("Undo") }
+            TextButton(onClick = {textEditorState.redo()}) { Text("Redo") }
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                modifier = Modifier
+                    .align(Alignment.CenterVertically)
+                    .padding(5.dp),
+                text = textEditorState.cursor.position.let { "${it.line}:${it.char}" },
+            )
+        }
+
     }
 }

@@ -27,6 +27,9 @@ jetbrainsKotlinJvm = "1.9.0"
 # https://github.com/haodong404/codroid-textmate/releases
 codroidTextmate = "1.0.2"
 
+# https://github.com/Wavesonics/ComposeTextEditorLibrary
+composetexteditor = "0.6.0"
+
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -46,6 +49,8 @@ kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 
 codroid-textmate = { module = "org.codroid:codroid-textmate", version.ref = "codroidTextmate" }
 oniguruma-lib = { module = "org.codroid:oniguruma-lib", version.ref = "codroidTextmate" }
+
+composetexteditor = { module = "com.darkrockstudios:composetexteditor", version.ref = "composetexteditor" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
